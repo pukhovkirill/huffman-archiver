@@ -1,0 +1,12 @@
+
+### IntelliJ IDEA ###
+.idea
+
+### VS Code ###
+.vscode/
+
+### CMake ###
+/cmake-build-debug/
+/cmake-build-release/
+
+### Project ###
