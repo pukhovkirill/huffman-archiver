@@ -1,8 +1,9 @@
 #ifndef H_PRIORITY_QUEUE_H
 #define H_PRIORITY_QUEUE_H
 
-#include <inttypes.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #endif //H_PRIORITY_QUEUE_H
 
@@ -14,5 +15,5 @@ struct h_pq {
 
 extern int (*compare)(const int *a, const int *b);
 
-struct h_pq *build_freq_table(const FILE *fls);
+struct h_pq *build_freq_table(const FILE *fls, int count);
 int build_pq(const struct h_pq *table);
