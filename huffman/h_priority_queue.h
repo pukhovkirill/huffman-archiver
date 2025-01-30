@@ -13,5 +13,5 @@ struct h_pq {
     uint64_t priority;
 };
 
-struct h_pq *build_freq_table(const FILE *fls, int count);
-int build_pq(struct h_pq *table, ssize_t t_size, int (*compare)(const struct h_pq *a, const struct h_pq *b));
+int build_freq_table(struct h_pq **t_table, FILE *fls, int count);
+void build_pq(struct h_pq *table, ssize_t t_size, int (*compare)(const struct h_pq *a, const struct h_pq *b));
