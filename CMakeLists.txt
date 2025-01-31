@@ -10,7 +10,8 @@ ENDIF(NOT DEFINED CMAKE_BUILD_TYPE)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/includes)
 
-add_subdirectory (src)
+add_subdirectory(tests)
+add_subdirectory(src)
 
 set(CMAKE_C_FLAGS " -std=c99")
 

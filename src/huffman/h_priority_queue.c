@@ -86,7 +86,7 @@ struct h_pq get_next_item(struct h_pq *queue, size_t *t_size,
     swap(queue, &queue[*t_size-1]);
     *t_size = *t_size-1;
 
-    queue = realloc(queue, *t_size+sizeof(*queue));
+    queue = realloc(queue, (*t_size)+sizeof(*queue));
 
     if(queue == NULL) {
         perror("func_(h_priority_queue/get_next_item): Cannot allocate memory, 'queue' is NULL");
