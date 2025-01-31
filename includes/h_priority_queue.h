@@ -42,7 +42,7 @@ int build_freq_table(struct h_pq **t_table, FILE *fls, int count);
  * function build priority queue (based on binary heap)
  * in the same array `table`
  */
-void build_pq(struct h_pq *table, ssize_t t_size,
+void build_pq(struct h_pq *table, size_t t_size,
  int (*compare)(const struct h_pq *a, const struct h_pq *b));
 
 /**
@@ -78,5 +78,5 @@ void build_pq(struct h_pq *table, ssize_t t_size,
  *        | \  |                 | \   |
  * min-> |4| 5 6                7  5   6
  */
-struct h_pq get_next_item(struct h_pq *queue, ssize_t *t_size,
+struct h_pq get_next_item(struct h_pq *queue, size_t *t_size,
     int (*compare)(const struct h_pq *a, const struct h_pq *b));

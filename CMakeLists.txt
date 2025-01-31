@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 3.28)
-project(huffman_archiver C)
 
-set(CMAKE_C_COMPILER gcc)
-set(CMAKE_C_STANDARD 99)
+project(huffman-archiver)
 
-add_executable(huffman_archiver main.c
-        huffman/huffman_algorithm.h
-        huffman/huffman_algorithm.c
-        huffman/h_priority_queue.h
-        huffman/h_priority_queue.c
-        huffman/h_tree.h
-        huffman/h_tree.c
-)
+# set(CMAKE_BUILD_TYPE Debug)
+
+IF(NOT DEFINED CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE Release)
+ENDIF(NOT DEFINED CMAKE_BUILD_TYPE)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/includes)
+
+add_subdirectory (src)
+
+set(CMAKE_C_FLAGS " -std=c99")
+
+add_executable(huffman-archiver main.c)

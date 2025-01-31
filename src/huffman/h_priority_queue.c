@@ -4,23 +4,11 @@
 
 #define TABLE_SIZE 256
 
-#ifndef UNIT_TEST
-
-static struct h_pq *resize(struct h_pq *table, ssize_t *t_size, int req_index);
-static int proccess_file(FILE *file, struct h_pq *table, ssize_t t_size);
-static void heapify(struct h_pq *table, ssize_t t_size, uint32_t i,
+static struct h_pq *resize(struct h_pq *table, size_t *t_size, int req_index);
+static int processing_file(FILE *file, struct h_pq *table, size_t t_size);
+static void heapify(struct h_pq *table, size_t t_size, uint32_t i,
           int (*compare)(const struct h_pq *a, const struct h_pq *b));
 static void swap(struct h_pq *a, struct h_pq *b);
-
-#else //UNIT_TEST
-
-struct h_pq *resize(struct h_pq *table, int *t_size, int req_index);
-int proccess_file(FILE *file, struct h_pq *table, int t_size);
-void heapify(struct h_pq *table, ssize_t t_size, uint32_t i,
-          int (*compare)(const struct h_pq *a, const struct h_pq *b));
-void swap(struct h_pq *a, struct h_pq *b);
-
-#endif //UNIT_TEST
 
 int build_freq_table(struct h_pq **t_table, FILE *fls, int count)
 {
@@ -49,7 +37,7 @@ int build_freq_table(struct h_pq **t_table, FILE *fls, int count)
 
     for(i = 0; i < count; ++i) {
 
-        ret = proccess_file(fls+i, table, TABLE_SIZE);
+        ret = processing_file(fls+i, table, TABLE_SIZE);
 
         if(ret < 0) {
             perror("func_(h_priority_queue/build_freq_table): Failed to proccessing file");
@@ -63,7 +51,7 @@ int build_freq_table(struct h_pq **t_table, FILE *fls, int count)
 
 void build_pq(
     struct h_pq *table,
-    const ssize_t t_size,
+    const size_t t_size,
     int (*compare)(const struct h_pq *a, const struct h_pq *b))
 {
 
@@ -82,10 +70,11 @@ void build_pq(
     }
 }
 
-struct h_pq get_next_item(struct h_pq *queue, ssize_t *t_size,
+struct h_pq get_next_item(struct h_pq *queue, size_t *t_size,
     int (*compare)(const struct h_pq *a, const struct h_pq *b))
 {
     struct h_pq res = {0};
+
 
     if(queue == NULL) {
         perror("func_(h_priority_queue/get_next_item): 'queue' argument is NULL");
@@ -101,7 +90,8 @@ struct h_pq get_next_item(struct h_pq *queue, ssize_t *t_size,
 
     if(queue == NULL) {
         perror("func_(h_priority_queue/get_next_item): Cannot allocate memory, 'queue' is NULL");
-        return {0};
+
+        return (struct h_pq){0};
     }
 
     heapify(queue, *t_size, 0, compare);
@@ -109,7 +99,7 @@ struct h_pq get_next_item(struct h_pq *queue, ssize_t *t_size,
     return res;
 }
 
-struct h_pq *resize(struct h_pq *table, ssize_t *t_size, const int req_index)
+struct h_pq *resize(struct h_pq *table, size_t *t_size, const int req_index)
 {
     int size;
     struct h_pq *new_table;
@@ -135,10 +125,10 @@ struct h_pq *resize(struct h_pq *table, ssize_t *t_size, const int req_index)
     return new_table;
 }
 
-int proccess_file(FILE *file, struct h_pq *table, const ssize_t t_size)
+int processing_file(FILE *file, struct h_pq *table, const size_t t_size)
 {
     int byte;
-    ssize_t ct_size;
+    size_t ct_size;
 
     ct_size = t_size;
     while((byte = fgetc(file)) != EOF) {
@@ -158,7 +148,7 @@ int proccess_file(FILE *file, struct h_pq *table, const ssize_t t_size)
 
 inline void heapify(
     struct h_pq *table,
-    const ssize_t t_size,
+    const size_t t_size,
     uint32_t i,
     int (*compare)(const struct h_pq *a, const struct h_pq *b))
 {
