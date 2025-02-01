@@ -101,7 +101,7 @@ struct h_pq get_next_item(struct h_pq *queue, size_t *t_size,
 
 struct h_pq *resize(struct h_pq *table, size_t *t_size, const int req_index)
 {
-    int size;
+    size_t size;
     struct h_pq *new_table;
 
     size = *t_size;
@@ -113,7 +113,7 @@ struct h_pq *resize(struct h_pq *table, size_t *t_size, const int req_index)
         return NULL;
     }
 
-    memset(&new_table, 0, (req_index+1)*sizeof(*new_table));
+    memset(new_table, 0, (req_index+1)*sizeof(*new_table));
 
     *t_size = req_index+1;
 

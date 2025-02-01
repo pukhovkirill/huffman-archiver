@@ -10,7 +10,6 @@ int h_pq_compare(const struct h_pq *a, const struct h_pq *b)
     return a->priority - b->priority;
 }
 
-
 TEST_FUNCT(build_freq_table) {
     struct h_pq *table = NULL;
     FILE *file = fopen("test.txt", "w+");
@@ -18,6 +17,7 @@ TEST_FUNCT(build_freq_table) {
     rewind(file);
 
     const int result = build_freq_table(&table, file, 1);
+
     fclose(file);
     remove("test.txt");
 
@@ -35,6 +35,7 @@ TEST_FUNCT(build_pq) {
     };
 
     build_pq(table, 3, h_pq_compare);
+
     CU_ASSERT(table[0].priority <= table[1].priority);
 }
 
@@ -50,13 +51,14 @@ TEST_FUNCT(get_next_item) {
     size_t size = 3;
 
     const struct h_pq item = get_next_item(table, &size, h_pq_compare);
+
     CU_ASSERT(item.character == 'a');
     CU_ASSERT(item.priority == 1);
     CU_ASSERT(size == 2);
 }
 
 void runSuite(void) {
-    const CU_pSuite suite = CUnitCreateSuite("Suite1");
+    const CU_pSuite suite = CUnitCreateSuite("priority_queue_suite");
     if (suite) {
         ADD_SUITE_TEST(suite, build_freq_table)
         ADD_SUITE_TEST(suite, build_pq)

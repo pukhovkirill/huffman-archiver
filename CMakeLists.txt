@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 
 project(huffman-archiver)
 
-# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 IF(NOT DEFINED CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
