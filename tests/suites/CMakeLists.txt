@@ -10,7 +10,7 @@ ENDMACRO(add_module file)
 file(GLOB C_FILES RELATIVE "${CMAKE_SOURCE_DIR}/tests/suites" "${CMAKE_SOURCE_DIR}/tests/suites/*.c")
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/../../includes"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../")
+        "${CMAKE_CURRENT_SOURCE_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
 
 FOREACH ( module ${C_FILES} )
     string( REGEX REPLACE ".c$" "" module "${module}" )

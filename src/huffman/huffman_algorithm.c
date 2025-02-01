@@ -1,5 +1,5 @@
-#include "huffman_algorithm.h"
-#include "h_tree.h"
+#include "h_priority_queue.h"
+
 
 void *create_huffman_archive(const FILE *fls)
 {

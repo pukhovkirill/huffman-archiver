@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <CUnit/Basic.h>
-#include "../../src/huffman/h_priority_queue.c"
+#include "huffman/h_priority_queue.c"
 
 #include "utils.h"
 
@@ -10,44 +10,78 @@ int h_pq_compare(const struct h_pq *a, const struct h_pq *b)
     return a->priority - b->priority;
 }
 
-TEST_FUNCT(resize) {
-    struct h_pq *table = malloc(2 * sizeof(struct h_pq));
-    size_t size = 2;
+TEST_FUNCT(resize_pq)
+{
+    struct h_pq *table;
+    h_priority_queue *pq;
+    const uint64_t capacity = 4;
 
-    table = resize(table, &size, 5);
+    table = malloc(2 * sizeof(*table));
+    pq = calloc(1, sizeof(*pq));
 
-    CU_ASSERT(size == 6);
-    free(table);
+    pq->pq_array = table;
+    pq->pq_capacity = capacity;
+
+    const int test_capacity = resize_pq(pq);
+
+    CU_ASSERT(test_capacity == capacity * 2);
+    CU_ASSERT(pq->pq_array != NULL);
+
+    free(pq->pq_array);
+    free(pq);
 }
 
-TEST_FUNCT(proccess_file) {
-    struct h_pq table[256] = {0};
-    FILE *file = fopen("test.txt", "w+");
-    fprintf(file, "abcabc");
-    rewind(file);
+TEST_FUNCT(resize_pq_when_table_is_NULL)
+{
+    h_priority_queue *pq;
+    const uint64_t capacity = 4;
 
-    const int result = processing_file(file, table, 256);
-    fclose(file);
-    remove("test.txt");
+    pq = calloc(1, sizeof(*pq));
+    pq->pq_capacity = capacity;
 
-    CU_ASSERT(result > 0);
-    CU_ASSERT(table['a'].priority == 2);
-    CU_ASSERT(table['b'].priority == 2);
-    CU_ASSERT(table['c'].priority == 2);
+    const int test_capacity = resize_pq(pq);
+
+    CU_ASSERT(test_capacity == capacity);
+    CU_ASSERT(pq->pq_array != NULL);
+
+    free(pq->pq_array);
+    free(pq);
 }
 
-TEST_FUNCT(heapify) {
+TEST_FUNCT(resize_pq_when_table_is_NULL_and_capacity_is_0)
+{
+    h_priority_queue *pq;
+    const uint64_t capacity = PQ_DEFAULT_CAPCITY;
+
+    pq = calloc(1, sizeof(*pq));
+
+    const int test_capacity = resize_pq(pq);
+
+    CU_ASSERT(test_capacity == capacity);
+    CU_ASSERT(pq->pq_array != NULL);
+
+    free(pq->pq_array);
+    free(pq);
+}
+
+TEST_FUNCT(down_heapify_pq)
+{
     struct h_pq table[] = {
-        {'a', 3},
-        {'b', 1},
-        {'c', 2},
-        {'d', 3},
-        {'e', 4},
-        {'f', 6},
-        {'g', 5}
+        {(struct h_tree *){0}, 7},
+        {(struct h_tree *){0}, 3},
+        {(struct h_tree *){0}, 4},
+        {(struct h_tree *){0}, 5},
+        {(struct h_tree *){0}, 6},
+        {(struct h_tree *){0}, 9},
+        {(struct h_tree *){0}, 8}
     };
 
-    heapify(table, 3, 0, &h_pq_compare);
+    h_priority_queue *pq = calloc(1, sizeof(*pq));
+    pq->pq_array = table;
+    pq->pq_capacity = 7;
+    pq->pq_size = 7;
+
+    down_heapify_pq(pq, 0, &h_pq_compare);
 
     CU_ASSERT(table[0].priority <= table[1].priority);
     CU_ASSERT(table[0].priority <= table[2].priority);
@@ -57,26 +91,66 @@ TEST_FUNCT(heapify) {
 
     CU_ASSERT(table[2].priority <= table[5].priority);
     CU_ASSERT(table[2].priority <= table[6].priority);
+
+    free(pq);
 }
 
-TEST_FUNCT(swap) {
-    struct h_pq a = {'x', 1};
-    struct h_pq b = {'y', 2};
+TEST_FUNCT(up_heapify_pq)
+{
+    struct h_pq table[] = {
+        {(struct h_tree *){0}, 2},
+        {(struct h_tree *){0}, 3},
+        {(struct h_tree *){0}, 4},
+        {(struct h_tree *){0}, 5},
+        {(struct h_tree *){0}, 6},
+        {(struct h_tree *){0}, 7},
+        {(struct h_tree *){0}, 1}
+    };
 
-    swap(&a, &b);
+    h_priority_queue *pq = calloc(1, sizeof(*pq));
+    pq->pq_array = table;
+    pq->pq_capacity = 7;
+    pq->pq_size = 7;
 
-    CU_ASSERT(a.character == 'y');
+    up_heapify_pq(pq, 6, &h_pq_compare);
+
+    CU_ASSERT(table[0].priority <= table[1].priority);
+    CU_ASSERT(table[0].priority <= table[2].priority);
+
+    CU_ASSERT(table[1].priority <= table[3].priority);
+    CU_ASSERT(table[1].priority <= table[4].priority);
+
+    CU_ASSERT(table[2].priority <= table[5].priority);
+    CU_ASSERT(table[2].priority <= table[6].priority);
+
+    free(pq);
+}
+
+TEST_FUNCT(swap_pq) {
+
+    struct h_tree t_a;
+    struct h_tree t_b;
+
+    struct h_pq a = {&t_a, 1};
+    struct h_pq b = {&t_b, 2};
+
+    swap_pq(&a, &b);
+
+    CU_ASSERT(a.p_node == &t_b);
     CU_ASSERT(a.priority == 2);
-    CU_ASSERT(b.character == 'x');
+
+    CU_ASSERT(b.p_node == &t_a);
     CU_ASSERT(b.priority == 1);
 }
 
 void runSuite(void) {
     const CU_pSuite suite = CUnitCreateSuite("h_pq_internal_functions_suite");
     if (suite) {
-        ADD_SUITE_TEST(suite, resize)
-        ADD_SUITE_TEST(suite, proccess_file)
-        ADD_SUITE_TEST(suite, heapify)
-        ADD_SUITE_TEST(suite, swap)
+        ADD_SUITE_TEST(suite, resize_pq)
+        ADD_SUITE_TEST(suite, resize_pq_when_table_is_NULL)
+        ADD_SUITE_TEST(suite, resize_pq_when_table_is_NULL_and_capacity_is_0);
+        ADD_SUITE_TEST(suite, down_heapify_pq)
+        ADD_SUITE_TEST(suite, up_heapify_pq)
+        ADD_SUITE_TEST(suite, swap_pq)
     }
 }

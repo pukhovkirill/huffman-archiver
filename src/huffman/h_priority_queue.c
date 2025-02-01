@@ -1,22 +1,26 @@
-#include "h_priority_queue.h"
+#include <h_priority_queue.h>
 
 #include <string.h>
 
 #define TABLE_SIZE 256
+#define PQ_DEFAULT_CAPCITY 32
 
-static struct h_pq *resize(struct h_pq *table, size_t *t_size, int req_index);
-static int processing_file(FILE *file, struct h_pq *table, size_t t_size);
-static void heapify(struct h_pq *table, size_t t_size, uint32_t i,
-          int (*compare)(const struct h_pq *a, const struct h_pq *b));
-static void swap(struct h_pq *a, struct h_pq *b);
+static int processing_file(FILE *file, struct h_pq *table);
 
-int build_freq_table(struct h_pq **t_table, FILE *fls, int count)
+static int resize_pq(h_priority_queue *pq);
+static void down_heapify_pq(const h_priority_queue *pq, uint64_t i,
+                            int (*compare)(const struct h_pq *a, const struct h_pq *b));
+static void up_heapify_pq(const h_priority_queue *pq, uint64_t i,
+                          int (*compare)(const struct h_pq *a, const struct h_pq *b));
+static void swap_pq(struct h_pq *a, struct h_pq *b);
+
+int build_freq_table(struct h_pq **t_table, FILE *fls, const int f_cnt)
 {
     int i;
     struct h_pq *table;
     int ret = TABLE_SIZE;
 
-    if(count <= 0) {
+    if(f_cnt <= 0) {
         perror("func_(h_priority_queue/build_freq_table): Invalid value for arguemnt 'count'");
         return -1;
     }
@@ -35,12 +39,9 @@ int build_freq_table(struct h_pq **t_table, FILE *fls, int count)
 
     memset(table, 0, TABLE_SIZE * sizeof(*table));
 
-    for(i = 0; i < count; ++i) {
-
-        ret = processing_file(fls+i, table, TABLE_SIZE);
-
+    for(i = 0; i < f_cnt; ++i) {
+        ret = processing_file(&fls[i], table);
         if(ret < 0) {
-            perror("func_(h_priority_queue/build_freq_table): Failed to proccessing file");
             return -1;
         }
     }
@@ -49,112 +50,180 @@ int build_freq_table(struct h_pq **t_table, FILE *fls, int count)
     return ret;
 }
 
-void build_pq(
-    struct h_pq *table,
-    const size_t t_size,
+h_priority_queue *build_pq(const struct h_pq *t_table, const size_t t_size,
     int (*compare)(const struct h_pq *a, const struct h_pq *b))
 {
+    struct h_pq pq_item;
+    h_priority_queue *pq;
 
-    if(table == NULL) {
-        perror("func_(h_priority_queue/build_pq): 'table' argument is NULL");
-        return;
+    if(t_table == NULL) {
+        perror("func_(h_priority_queue/build_pq): Invalid value for arguemnt 'table', 'table' is NULL");
+        return NULL;
+    }
+
+    if(t_size <= 0) {
+        perror("func_(h_priority_queue/build_pq): Invalid value for arguemnt 't_size'");
+        return NULL;
     }
 
     if(compare == NULL) {
-        perror("func_(h_priority_queue/build_pq): 'compare' argument is NULL");
-        return;
+        perror("func_(h_priority_queue/build_pq): Invalid value for arguemnt 'compare', 'compare' is NULL");
+        return NULL;
     }
 
-    for (int i = t_size-1; i >= 0; --i) {
-        heapify(table, t_size, i, compare);
+    pq = malloc(sizeof(*pq));
+    memset(pq, 0, sizeof(*pq));
+
+    if(pq == NULL) {
+        perror("func_(h_priority_queue/build_freq_table): Cannot allocate memory, 'pq' is NULL");
+        return NULL;
     }
+
+    pq->pq_array = calloc(PQ_DEFAULT_CAPCITY, sizeof(*pq->pq_array));
+    pq->pq_capacity = PQ_DEFAULT_CAPCITY;
+
+    if(pq->pq_array == NULL) {
+        perror("func_(h_priority_queue/build_freq_table): Cannot allocate memory, 'pq->pq_array' is NULL");
+        return NULL;
+    }
+
+    for(int i = 0; i < t_size; i++) {
+        pq_item = t_table[i];
+        if(pq_item.priority == 0)
+            continue;
+        if(offer_pq(pq, &pq_item, compare) == -1) {
+            perror("func_(h_priority_queue/build_pq): Failed to add item in priority queue");
+            return NULL;
+        }
+    }
+
+    return pq;
 }
 
-struct h_pq get_next_item(struct h_pq *queue, size_t *t_size,
+struct h_pq pull_pq(h_priority_queue *pq,
     int (*compare)(const struct h_pq *a, const struct h_pq *b))
 {
     struct h_pq res = {0};
+    struct h_pq *table;
+    uint64_t t_size;
 
-
-    if(queue == NULL) {
-        perror("func_(h_priority_queue/get_next_item): 'queue' argument is NULL");
+    if(pq == NULL) {
+        perror("func_(h_priority_queue/pull_pq): Invalid value for arguemnt 'pq', 'pq' is NULL");
         return res;
     }
 
-    memcpy(&res, queue, sizeof(*queue));
-
-    swap(queue, &queue[*t_size-1]);
-    *t_size = *t_size-1;
-
-    queue = realloc(queue, (*t_size)+sizeof(*queue));
-
-    if(queue == NULL) {
-        perror("func_(h_priority_queue/get_next_item): Cannot allocate memory, 'queue' is NULL");
-
-        return (struct h_pq){0};
+    if(compare == NULL) {
+        perror("func_(h_priority_queue/pull_pq): Invalid value for arguemnt 'compare', 'compare' is NULL");
+        return res;
     }
 
-    heapify(queue, *t_size, 0, compare);
+    table = pq->pq_array;
+    t_size = pq->pq_size;
+
+    memcpy(&res, &table[0], sizeof(res));
+    swap_pq(&table[0], &table[t_size-1]);
+    pq->pq_size = t_size-1;
+
+    down_heapify_pq(pq, 0, compare);
 
     return res;
 }
 
-struct h_pq *resize(struct h_pq *table, size_t *t_size, const int req_index)
+int offer_pq(h_priority_queue *pq, const struct h_pq *item,
+    int (*compare)(const struct h_pq *a, const struct h_pq *b))
 {
-    size_t size;
-    struct h_pq *new_table;
+    struct h_pq *table;
+    uint64_t t_size;
+    uint64_t t_capacity;
 
-    size = *t_size;
-
-    new_table = malloc((req_index+1)*sizeof(*new_table));
-
-    if(new_table == NULL) {
-        perror("func_(h_priority_queue/resize): Cannot allocate memory, 'new_table' is NULL");
-        return NULL;
+    if(pq == NULL) {
+        perror("func_(h_priority_queue/offer_pq): Invalid value for arguemnt 'pq', 'pq' is NULL");
+        return -1;
     }
 
-    memset(new_table, 0, (req_index+1)*sizeof(*new_table));
-
-    *t_size = req_index+1;
-
-    for(int i = 0; i < size; i++) {
-        new_table[i] = table[i];
+    if(item == NULL) {
+        perror("func_(h_priority_queue/offer_pq): Invalid value for arguemnt 'item', 'item' is NULL");
+        return -1;
     }
 
-    free(table);
-    return new_table;
+    if(compare == NULL) {
+        perror("func_(h_priority_queue/offer_pq): Invalid value for arguemnt 'compare', 'compare' is NULL");
+        return -1;
+    }
+
+    table = pq->pq_array;
+    t_size = pq->pq_size;
+    t_capacity = pq->pq_capacity;
+
+    if(t_size+1 > t_capacity) {
+        if(resize_pq(pq) == -1) {
+            perror("func_(h_priority_queue/offer_pq): Cannot resize priority queue");
+            return -1;
+        }
+    }
+
+    memcpy(&table[t_size], item, sizeof(*table));
+    up_heapify_pq(pq, t_size, compare);
+    t_size += 1;
+
+    pq->pq_size = t_size;
+
+    return t_size;
 }
 
-int processing_file(FILE *file, struct h_pq *table, const size_t t_size)
+int processing_file(FILE *file, struct h_pq *table)
 {
     int byte;
-    size_t ct_size;
-
-    ct_size = t_size;
     while((byte = fgetc(file)) != EOF) {
-        if(ct_size <= byte) {
-            table = resize(table, &ct_size, byte);
-            if(table == NULL) {
-                return -1;
-            }
+        struct h_tree *node = calloc(1, sizeof(*node));
+
+        if(node == NULL) {
+            perror("func_(h_priority_queue/processing_file): Cannot allocate memory, 'node' is NULL");
+            return -1;
         }
 
-        table[byte].character = (uint8_t) byte;
+        node->character = (uint8_t) byte;
+
+        table[byte].p_node = node;
         table[byte].priority += 1;
     }
 
-    return ct_size;
+    return TABLE_SIZE;
 }
 
-inline void heapify(
-    struct h_pq *table,
-    const size_t t_size,
-    uint32_t i,
-    int (*compare)(const struct h_pq *a, const struct h_pq *b))
+int resize_pq(h_priority_queue *pq)
 {
-    uint32_t l;
-    uint32_t r;
-    uint32_t idx;
+    struct h_pq *table;
+    uint64_t t_capacity;
+
+    table = pq->pq_array;
+    t_capacity = pq->pq_capacity;
+
+    if(table == NULL) {
+        if(t_capacity == 0) t_capacity = PQ_DEFAULT_CAPCITY;
+        table = calloc(t_capacity, sizeof(*table));
+    }else {
+        t_capacity = t_capacity * 2;
+        table = realloc(table, t_capacity*sizeof(*table));
+    }
+
+    pq->pq_array = table;
+    pq->pq_capacity = t_capacity;
+
+    return t_capacity;
+}
+
+void down_heapify_pq(const h_priority_queue *pq, uint64_t i,
+                     int (*compare)(const struct h_pq *a, const struct h_pq *b))
+{
+    uint64_t l;
+    uint64_t r;
+    uint64_t idx;
+    uint64_t t_size;
+    struct h_pq *table;
+
+    t_size = pq->pq_size;
+    table = pq->pq_array;
 
     while(2*i+1 < t_size) {
         l = i*2+1;
@@ -167,14 +236,28 @@ inline void heapify(
 
         if(compare(&table[i], &table[idx]) <= 0)
             break;
-        swap(table+i, table+idx);
+        swap_pq(&table[i], &table[idx]);
         i = idx;
     }
 }
 
-void swap(struct h_pq *a, struct h_pq *b)
+void up_heapify_pq(const h_priority_queue *pq, uint64_t i,
+                   int (*compare)(const struct h_pq *a, const struct h_pq *b))
 {
-    const struct h_pq tmp = *a;
+    struct h_pq *table;
+
+    table = pq->pq_array;
+
+    while(compare(&table[i], &table[(i-1)/2]) < 0) {
+        swap_pq(&table[i], &table[(i-1)/2]);
+        i = (i-1)/2;
+    }
+}
+
+inline void swap_pq(struct h_pq *a, struct h_pq *b)
+{
+    struct h_pq tmp;
+    tmp = *a;
     *a = *b;
     *b = tmp;
 }
