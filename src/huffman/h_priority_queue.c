@@ -14,7 +14,7 @@ static void up_heapify_pq(const h_priority_queue *pq, uint64_t i,
                           int (*compare)(const struct h_pq *a, const struct h_pq *b));
 static void swap_pq(struct h_pq *a, struct h_pq *b);
 
-int build_freq_table(struct h_pq **t_table, FILE *fls, const int f_cnt)
+int build_freq_table(struct h_pq **t_table, FILE **fls, const int f_cnt)
 {
     int i;
     struct h_pq *table;
@@ -40,7 +40,7 @@ int build_freq_table(struct h_pq **t_table, FILE *fls, const int f_cnt)
     memset(table, 0, TABLE_SIZE * sizeof(*table));
 
     for(i = 0; i < f_cnt; ++i) {
-        ret = processing_file(&fls[i], table);
+        ret = processing_file(fls[i], table);
         if(ret < 0) {
             return -1;
         }
@@ -175,17 +175,20 @@ int processing_file(FILE *file, struct h_pq *table)
 {
     int byte;
     while((byte = fgetc(file)) != EOF) {
-        struct h_tree *node = calloc(1, sizeof(*node));
-
-        if(node == NULL) {
-            perror("func_(h_priority_queue/processing_file): Cannot allocate memory, 'node' is NULL");
-            return -1;
-        }
-
-        node->character = (uint8_t) byte;
-
-        table[byte].p_node = node;
         table[byte].priority += 1;
+
+        if(table[byte].p_node == NULL) {
+            struct h_tree *node = calloc(1, sizeof(*node));
+
+            if(node == NULL) {
+                perror("func_(h_priority_queue/processing_file): Cannot allocate memory, 'node' is NULL");
+                return -1;
+            }
+
+            node->character = (uint8_t) byte;
+
+            table[byte].p_node = node;
+        }
     }
 
     return TABLE_SIZE;
@@ -248,7 +251,7 @@ void up_heapify_pq(const h_priority_queue *pq, uint64_t i,
 
     table = pq->pq_array;
 
-    while(compare(&table[i], &table[(i-1)/2]) < 0) {
+    while(i > 0 && compare(&table[i], &table[(i-1)/2]) < 0) {
         swap_pq(&table[i], &table[(i-1)/2]);
         i = (i-1)/2;
     }

@@ -12,7 +12,3 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/includes)
 
 add_subdirectory(tests)
 add_subdirectory(src)
-
-set(CMAKE_C_FLAGS " -std=c99")
-
-add_executable(huffman-archiver main.c)

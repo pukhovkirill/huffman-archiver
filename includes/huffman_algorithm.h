@@ -4,13 +4,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-// Huffman tree node
-struct h_tree {
-    uint8_t character;
-    struct h_tree *left;
-    struct h_tree *right;
-};
-
 #endif //HUFFMAN_ALGORITHM_H
 
 void *create_huffman_archive(const FILE *fls, size_t f_cnt);

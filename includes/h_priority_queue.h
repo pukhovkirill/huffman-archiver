@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include "huffman_algorithm.h"
+#include "h_tree.h"
 
 // Priority queue node
 struct h_pq {
@@ -30,7 +30,7 @@ typedef struct {
  * function linearly counts the number
  * of each unique character from files
  */
-int build_freq_table(struct h_pq **t_table, FILE *fls, int f_cnt);
+int build_freq_table(struct h_pq **t_table, FILE **fls, int f_cnt);
 
 /**
  *

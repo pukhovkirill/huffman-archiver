@@ -126,7 +126,8 @@ TEST_FUNCT(up_heapify_pq)
     free(pq);
 }
 
-TEST_FUNCT(swap_pq) {
+TEST_FUNCT(swap_pq)
+{
 
     struct h_tree t_a;
     struct h_tree t_b;
@@ -143,7 +144,8 @@ TEST_FUNCT(swap_pq) {
     CU_ASSERT(b.priority == 1);
 }
 
-void runSuite(void) {
+void runSuite(void)
+{
     const CU_pSuite suite = CUnitCreateSuite("h_pq_internal_functions_suite");
     if (suite) {
         ADD_SUITE_TEST(suite, resize_pq)
