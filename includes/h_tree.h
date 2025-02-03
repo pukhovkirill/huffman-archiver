@@ -14,3 +14,4 @@ struct h_tree {
 #endif //H_TREE_H
 
 struct h_tree *build_tree(FILE **fls, int f_cnt);
+int h_codes_gen(char ***p_buf, struct h_tree *tree);

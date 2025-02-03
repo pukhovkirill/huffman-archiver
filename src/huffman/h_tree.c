@@ -1,5 +1,11 @@
 #include "h_tree.h"
 #include "h_priority_queue.h"
+#include "h_stack.h"
+
+struct pair {
+    char code;
+    struct h_tree *node;
+};
 
 int h_pq_compare(const struct h_pq *a, const struct h_pq *b)
 {
@@ -8,31 +14,22 @@ int h_pq_compare(const struct h_pq *a, const struct h_pq *b)
 
 struct h_tree *build_tree(FILE **fls, const int f_cnt)
 {
-    size_t q_size;
+    size_t t_size;
     struct h_pq *table;
     h_priority_queue *pq;
     struct h_pq item1;
     struct h_pq item2;
     struct h_pq *n_item;
 
-    if(fls == NULL) {
-        perror("func_(h_tree/build_tree): Invalid value for arguemnt 'fls', 'fls' is NULL");
-        return NULL;
-    }
+    t_size = build_freq_table(&table, fls, f_cnt);
 
-    if(f_cnt <= 0) {
-        perror("func(h_tree/build_tree): Invalid value for arguemnt 'count'");
-        return NULL;
-    }
-
-    q_size = build_freq_table(&table, fls, f_cnt);
-
-    if(q_size == -1) {
+    if(t_size == -1) {
         perror("func_(h_tree/build_tree): Failed to build frequency table");
+        free(table);
         return NULL;
     }
 
-    pq = build_pq(table, q_size, &h_pq_compare);
+    pq = build_pq(table, t_size, &h_pq_compare);
 
     free(table);
 
@@ -79,4 +76,96 @@ struct h_tree *build_tree(FILE **fls, const int f_cnt)
     free(pq);
 
     return item1.p_node;
+}
+
+static int read_h_tree(char **t_table, struct h_tree *tree)
+{
+    h_stack *stack;
+    struct h_tree *node;
+    const size_t s_capacity = 256;
+    size_t s_size = 0;
+    char code[s_capacity];
+
+    memset(code, 0, s_capacity*sizeof(*code));
+
+    stack = calloc(1, sizeof(*stack));
+
+    if(stack == NULL) {
+        perror("func_(h_tree/read_h_tree): Cannot allocate memory, 'stack' is NULL");
+        return -1;
+    }
+
+    struct pair *n_pair = calloc(1, sizeof(*n_pair));
+    n_pair->node = tree;
+
+    push_sck(stack, n_pair);
+
+    while(stack->size > 0) {
+        pop_sck(stack, (void **) &n_pair);
+
+        node = n_pair->node;
+
+        const char ch = n_pair->code;
+
+        if(ch != 0) code[s_size++] = ch;
+
+        free(n_pair);
+
+        if(node != NULL) {
+            if(node->bit0 == NULL && node->bit1 == NULL) {
+                t_table[node->character] = calloc(s_capacity, sizeof(char));
+
+                if(t_table[node->character] == NULL) {
+                    perror("func_(h_tree/read_h_tree): Cannot allocate memory, 'table' is NULL");
+                    return -1;
+                }
+
+                memcpy(t_table[node->character], code, s_capacity);
+                code[--s_size] = 0;
+            }
+        }
+
+        if(node->bit0 != NULL) {
+            struct pair *b_pair;
+
+            b_pair = calloc(1, sizeof(*b_pair));
+            b_pair->node = node->bit0;
+            b_pair->code = '0';
+
+            push_sck(stack, b_pair);
+        }
+
+        if(node->bit1 != NULL) {
+            struct pair *b_pair;
+
+            b_pair = calloc(1, sizeof(*b_pair));
+            b_pair->node = node->bit1;
+            b_pair->code = '1';
+
+            push_sck(stack, b_pair);
+        }
+    }
+
+    free(stack);
+    return 0;
+}
+
+int h_codes_gen(char ***p_buf, struct h_tree *tree)
+{
+    size_t t_size;
+    char **table;
+    int ret;
+
+    t_size = TABLE_SIZE;
+    table = calloc(t_size, sizeof(char *));
+
+    if(table == NULL) {
+        perror("func_(h_tree/h_codes_gen): Cannot allocate memory, 'table' is NULL");
+        return -1;
+    }
+
+    ret = read_h_tree(table, tree);
+
+    *p_buf = table;
+    return ret;
 }

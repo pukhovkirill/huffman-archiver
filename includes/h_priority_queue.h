@@ -4,7 +4,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <string.h>
 #include "h_tree.h"
+
+#define TABLE_SIZE 256
 
 // Priority queue node
 struct h_pq {
@@ -22,7 +25,7 @@ typedef struct {
 
 /**
  *
- * @param t_table - destination buffer when frequency table will be saved
+ * @param p_buf - pointer to destination buffer when frequency table will be saved
  * @param fls  - array of files, witch will be processed
  * @param f_cnt - count of files
  * @return size of frequency table or -1
@@ -30,7 +33,7 @@ typedef struct {
  * function linearly counts the number
  * of each unique character from files
  */
-int build_freq_table(struct h_pq **t_table, FILE **fls, int f_cnt);
+int build_freq_table(struct h_pq **p_buf, FILE **fls, int f_cnt);
 
 /**
  *

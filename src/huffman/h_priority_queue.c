@@ -1,8 +1,5 @@
 #include <h_priority_queue.h>
 
-#include <string.h>
-
-#define TABLE_SIZE 256
 #define PQ_DEFAULT_CAPCITY 32
 
 static int processing_file(FILE *file, struct h_pq *table);
@@ -14,21 +11,11 @@ static void up_heapify_pq(const h_priority_queue *pq, uint64_t i,
                           int (*compare)(const struct h_pq *a, const struct h_pq *b));
 static void swap_pq(struct h_pq *a, struct h_pq *b);
 
-int build_freq_table(struct h_pq **t_table, FILE **fls, const int f_cnt)
+int build_freq_table(struct h_pq **p_buf, FILE **fls, const int f_cnt)
 {
     int i;
     struct h_pq *table;
     int ret = TABLE_SIZE;
-
-    if(f_cnt <= 0) {
-        perror("func_(h_priority_queue/build_freq_table): Invalid value for arguemnt 'count'");
-        return -1;
-    }
-
-    if(fls == NULL) {
-        perror("func_(h_priority_queue/build_freq_table): Invalid value for arguemnt 'fls', 'fls' is NULL");
-        return -1;
-    }
 
     table = malloc(TABLE_SIZE * sizeof(*table));
 
@@ -46,8 +33,24 @@ int build_freq_table(struct h_pq **t_table, FILE **fls, const int f_cnt)
         }
     }
 
-    *t_table = table;
+    *p_buf = table;
     return ret;
+}
+
+static void free_pq(h_priority_queue *pq)
+{
+    size_t t_size;
+    struct h_pq *table;
+
+    t_size = pq->pq_capacity;
+    table = pq->pq_array;
+
+    for(int i = 0; i < t_size; i++)
+        if(table[i].p_node != NULL)
+            free(table[i].p_node);
+
+    free(pq->pq_array);
+    free(pq);
 }
 
 h_priority_queue *build_pq(const struct h_pq *t_table, const size_t t_size,
@@ -56,34 +59,21 @@ h_priority_queue *build_pq(const struct h_pq *t_table, const size_t t_size,
     struct h_pq pq_item;
     h_priority_queue *pq;
 
-    if(t_table == NULL) {
-        perror("func_(h_priority_queue/build_pq): Invalid value for arguemnt 'table', 'table' is NULL");
-        return NULL;
-    }
-
-    if(t_size <= 0) {
-        perror("func_(h_priority_queue/build_pq): Invalid value for arguemnt 't_size'");
-        return NULL;
-    }
-
-    if(compare == NULL) {
-        perror("func_(h_priority_queue/build_pq): Invalid value for arguemnt 'compare', 'compare' is NULL");
-        return NULL;
-    }
-
     pq = malloc(sizeof(*pq));
-    memset(pq, 0, sizeof(*pq));
 
     if(pq == NULL) {
-        perror("func_(h_priority_queue/build_freq_table): Cannot allocate memory, 'pq' is NULL");
+        perror("func_(h_priority_queue/build_pq): Cannot allocate memory, 'pq' is NULL");
         return NULL;
     }
+
+    memset(pq, 0, sizeof(*pq));
 
     pq->pq_array = calloc(PQ_DEFAULT_CAPCITY, sizeof(*pq->pq_array));
     pq->pq_capacity = PQ_DEFAULT_CAPCITY;
 
     if(pq->pq_array == NULL) {
-        perror("func_(h_priority_queue/build_freq_table): Cannot allocate memory, 'pq->pq_array' is NULL");
+        perror("func_(h_priority_queue/build_pq): Cannot allocate memory, 'pq->pq_array' is NULL");
+        free(pq);
         return NULL;
     }
 
@@ -93,6 +83,7 @@ h_priority_queue *build_pq(const struct h_pq *t_table, const size_t t_size,
             continue;
         if(offer_pq(pq, &pq_item, compare) == -1) {
             perror("func_(h_priority_queue/build_pq): Failed to add item in priority queue");
+            free_pq(pq);
             return NULL;
         }
     }
@@ -106,16 +97,6 @@ struct h_pq pull_pq(h_priority_queue *pq,
     struct h_pq res = {0};
     struct h_pq *table;
     uint64_t t_size;
-
-    if(pq == NULL) {
-        perror("func_(h_priority_queue/pull_pq): Invalid value for arguemnt 'pq', 'pq' is NULL");
-        return res;
-    }
-
-    if(compare == NULL) {
-        perror("func_(h_priority_queue/pull_pq): Invalid value for arguemnt 'compare', 'compare' is NULL");
-        return res;
-    }
 
     table = pq->pq_array;
     t_size = pq->pq_size;
@@ -135,21 +116,6 @@ int offer_pq(h_priority_queue *pq, const struct h_pq *item,
     struct h_pq *table;
     uint64_t t_size;
     uint64_t t_capacity;
-
-    if(pq == NULL) {
-        perror("func_(h_priority_queue/offer_pq): Invalid value for arguemnt 'pq', 'pq' is NULL");
-        return -1;
-    }
-
-    if(item == NULL) {
-        perror("func_(h_priority_queue/offer_pq): Invalid value for arguemnt 'item', 'item' is NULL");
-        return -1;
-    }
-
-    if(compare == NULL) {
-        perror("func_(h_priority_queue/offer_pq): Invalid value for arguemnt 'compare', 'compare' is NULL");
-        return -1;
-    }
 
     table = pq->pq_array;
     t_size = pq->pq_size;
@@ -208,6 +174,11 @@ int resize_pq(h_priority_queue *pq)
     }else {
         t_capacity = t_capacity * 2;
         table = realloc(table, t_capacity*sizeof(*table));
+    }
+
+    if(table == NULL) {
+        perror("func_(h_priority_queue/resize_pq): Cannot allocate memory, 'table' is NULL");
+        return -1;
     }
 
     pq->pq_array = table;
