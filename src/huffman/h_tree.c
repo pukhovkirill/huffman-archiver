@@ -82,8 +82,9 @@ static int read_h_tree(char **t_table, struct h_tree *tree)
 {
     h_stack *stack;
     struct h_tree *node;
-    const size_t s_capacity = 256;
+
     size_t s_size = 0;
+    const size_t s_capacity = 256;
     char code[s_capacity];
 
     memset(code, 0, s_capacity*sizeof(*code));
@@ -102,11 +103,9 @@ static int read_h_tree(char **t_table, struct h_tree *tree)
 
     while(stack->size > 0) {
         pop_sck(stack, (void **) &n_pair);
-
         node = n_pair->node;
 
         const char ch = n_pair->code;
-
         if(ch != 0) code[s_size++] = ch;
 
         free(n_pair);
