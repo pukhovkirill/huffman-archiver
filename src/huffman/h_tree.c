@@ -12,26 +12,14 @@ int h_pq_compare(const struct h_pq *a, const struct h_pq *b)
     return a->priority - b->priority;
 }
 
-struct h_tree *build_tree(FILE **fls, const int f_cnt)
+struct h_tree *build_tree(const struct h_pq *f_table, const size_t f_size)
 {
-    size_t t_size;
-    struct h_pq *table;
     h_priority_queue *pq;
     struct h_pq item1;
     struct h_pq item2;
     struct h_pq *n_item;
 
-    t_size = build_freq_table(&table, fls, f_cnt);
-
-    if(t_size == -1) {
-        perror("func_(h_tree/build_tree): Failed to build frequency table");
-        free(table);
-        return NULL;
-    }
-
-    pq = build_pq(table, t_size, &h_pq_compare);
-
-    free(table);
+    pq = build_pq(f_table, f_size, &h_pq_compare);
 
     if(pq == NULL) {
         perror("func_(h_tree/build_tree): Failed to build priority queue");

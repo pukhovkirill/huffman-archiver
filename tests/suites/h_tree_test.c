@@ -1,18 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <CUnit/Basic.h>
+#include "h_frequency_table.h"
 #include "h_tree.h"
 
 #include "utils.h"
 
 TEST_FUNCT(build_tree)
 {
+    struct h_pq *buf;
     struct h_tree *tree;
     FILE *file = fopen("test.txt", "w+");
     fprintf(file, "aaabbc");
     rewind(file);
 
-    tree = build_tree(&file, 1);
+    const int f_size = build_freq_table(&buf, &file, 1);
+    tree = build_tree(buf, f_size);
 
     fclose(file);
     remove("test.txt");
@@ -22,6 +25,7 @@ TEST_FUNCT(build_tree)
     CU_ASSERT(tree->bit0->bit0->character == 'c');
     CU_ASSERT(tree->bit0->bit1->character == 'b');
 
+    free(buf);
     free(tree->bit1);
     free(tree->bit0->bit0);
     free(tree->bit0->bit1);
@@ -31,12 +35,14 @@ TEST_FUNCT(build_tree)
 
 TEST_FUNCT(h_codes_gen)
 {
+    struct h_pq *f_buf;
     struct h_tree *tree;
     FILE *file = fopen("test.txt", "w+");
     fprintf(file, "aaabbc");
     rewind(file);
 
-    tree = build_tree(&file, 1);
+    const int f_size = build_freq_table(&f_buf, &file, 1);
+    tree = build_tree(f_buf, f_size);
 
     char **buf;
 
@@ -57,6 +63,7 @@ TEST_FUNCT(h_codes_gen)
     free(tree->bit0);
     free(tree);
 
+    free(f_buf);
     free(buf['a']);
     free(buf['b']);
     free(buf['c']);

@@ -2,21 +2,14 @@
 #define H_TREE_H
 
 #include <stdio.h>
-#include <inttypes.h>
-
-// Huffman tree node
-struct h_tree {
-    uint8_t character;
-    struct h_tree *bit1;
-    struct h_tree *bit0;
-};
+#include "huffman.h"
 
 #endif //H_TREE_H
 
 /**
  * 
- * @param fls  - array of files, witch will be processed
- * @param f_cnt - count of files
+ * @param f_table - pointer to frequency table
+ * @param f_size - size of frequency table
  * @return pointer to root of huffman tree or NULL
  *
  * function build huffman tree for 'f_cnt' files.
@@ -42,7 +35,7 @@ struct h_tree {
  *       1 |
  * |c|3|---|
  */
-struct h_tree *build_tree(FILE **fls, int f_cnt);
+struct h_tree *build_tree(const struct h_pq *f_table, size_t f_size);
 
 /**
  * 

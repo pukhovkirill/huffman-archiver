@@ -14,12 +14,11 @@ set(LIB_VERSION_STRING ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR})
 file(GLOB LIB_SRC "*.c")
 
 include_directories(../../includes)
-add_library(huff SHARED ${LIB_SRC}
-        h_frequency_table.c)
-add_library(huffs STATIC ${LIB_SRC})
+add_library(arc SHARED ${LIB_SRC})
+add_library(arcs STATIC ${LIB_SRC})
 
-set_target_properties(huff PROPERTIES VERSION ${LIB_VERSION_STRING})
-set_target_properties(huffs PROPERTIES VERSION ${LIB_VERSION_STRING})
+set_target_properties(arc PROPERTIES VERSION ${LIB_VERSION_STRING})
+set_target_properties(arcs PROPERTIES VERSION ${LIB_VERSION_STRING})
 
-install(TARGETS huff DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
-install(TARGETS huffs DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
+install(TARGETS arc DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
+install(TARGETS arcs DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})

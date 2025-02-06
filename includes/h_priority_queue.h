@@ -3,41 +3,14 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <inttypes.h>
 #include <string.h>
-#include "h_tree.h"
-
-#define TABLE_SIZE 256
-
-// Priority queue node
-struct h_pq {
-    struct h_tree *p_node;
-    uint64_t priority;
-};
-
-typedef struct {
-    struct h_pq *pq_array;
-    uint64_t pq_capacity;
-    uint64_t pq_size;
-} h_priority_queue;
+#include "huffman.h"
 
 #endif //H_PRIORITY_QUEUE_H
 
 /**
  *
- * @param p_buf - pointer to destination buffer when frequency table will be saved
- * @param fls  - array of files, witch will be processed
- * @param f_cnt - count of files
- * @return size of frequency table or -1
- *
- * function linearly counts the number
- * of each unique character from files
- */
-int build_freq_table(struct h_pq **p_buf, FILE **fls, int f_cnt);
-
-/**
- *
- * @param t_table - pointer to frequency table created by `build_freq_table` function
+ * @param t_table - pointer to frequency table
  * @param t_size - size of table
  * @param compare - comparator for `h_pq` struct
  * @return pointer to priority queue
