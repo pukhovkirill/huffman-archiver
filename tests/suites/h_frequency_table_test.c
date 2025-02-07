@@ -3,7 +3,7 @@
 #include <CUnit/Basic.h>
 #include "h_frequency_table.h"
 
-#include "utils.h"
+#include "../utils.h"
 
 TEST_FUNCT(build_freq_table)
 {

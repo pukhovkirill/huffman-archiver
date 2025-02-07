@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include "utils.h"
 
 struct h_sck {
     void *value;

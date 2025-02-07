@@ -65,3 +65,6 @@ struct h_tree *build_tree(const struct h_pq *f_table, size_t f_size);
  *   ...
  */
 int h_codes_gen(char ***p_buf, struct h_tree *tree);
+
+void free_tree(struct h_tree *tree);
+void free_codes(char **codes);

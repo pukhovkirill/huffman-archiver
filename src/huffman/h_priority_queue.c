@@ -1,4 +1,4 @@
-#include <h_priority_queue.h>
+#include "h_priority_queue.h"
 
 #define PQ_DEFAULT_CAPCITY 32
 
@@ -31,32 +31,16 @@ h_priority_queue *build_pq(const struct h_pq *t_table, const size_t t_size,
     struct h_pq pq_item;
     h_priority_queue *pq;
 
-    pq = malloc(sizeof(*pq));
-
-    if(pq == NULL) {
-        perror("func_(h_priority_queue/build_pq): Cannot allocate memory, 'pq' is NULL");
-        return NULL;
-    }
-
+    pq = xmalloc("build_pq", sizeof(*pq));
     memset(pq, 0, sizeof(*pq));
 
-    pq->pq_array = calloc(PQ_DEFAULT_CAPCITY, sizeof(*pq->pq_array));
+    pq->pq_array = xcalloc("build_pq", PQ_DEFAULT_CAPCITY, sizeof(*pq->pq_array));
     pq->pq_capacity = PQ_DEFAULT_CAPCITY;
-
-    if(pq->pq_array == NULL) {
-        perror("func_(h_priority_queue/build_pq): Cannot allocate memory, 'pq->pq_array' is NULL");
-        free(pq);
-        return NULL;
-    }
 
     for(int i = 0; i < t_size; i++) {
         pq_item = t_table[i];
-        if(pq_item.priority == 0)
-            continue;
-        if(offer_pq(pq, &pq_item, compare) == -1) {
-            perror("func_(h_priority_queue/build_pq): Failed to add item in priority queue");
-            free_pq(pq);
-            return NULL;
+        if(pq_item.priority > 0) {
+            offer_pq(pq, &pq_item, compare);
         }
     }
 
@@ -69,13 +53,31 @@ struct h_pq pull_pq(h_priority_queue *pq,
     struct h_pq res = {0};
     struct h_pq *table;
     uint64_t t_size;
+    uint64_t pq_size;
 
     table = pq->pq_array;
-    t_size = pq->pq_size;
+    t_size = pq->pq_nnodes;
+    pq_size = pq->pq_size;
+
+    if(table[0].bucket != NULL) {
+        struct h_pq *node;
+        node = &table[0];
+        while(node->bucket->bucket != NULL) {
+            node = node->bucket;
+        }
+        memcpy(&res, node->bucket, sizeof(res));
+        free(node->bucket);
+        node->bucket = NULL;
+
+        pq->pq_size = pq_size-1;
+
+        return res;
+    }
 
     memcpy(&res, &table[0], sizeof(res));
     swap_pq(&table[0], &table[t_size-1]);
-    pq->pq_size = t_size-1;
+    pq->pq_nnodes = t_size-1;
+    pq->pq_size   = pq_size-1;
 
     down_heapify_pq(pq, 0, compare);
 
@@ -88,25 +90,42 @@ int offer_pq(h_priority_queue *pq, const struct h_pq *item,
     struct h_pq *table;
     uint64_t t_size;
     uint64_t t_capacity;
+    uint64_t pq_size;
 
     table = pq->pq_array;
-    t_size = pq->pq_size;
+    t_size = pq->pq_nnodes;
     t_capacity = pq->pq_capacity;
 
-    if(t_size+1 > t_capacity) {
-        if(resize_pq(pq) == -1) {
-            perror("func_(h_priority_queue/offer_pq): Cannot resize priority queue");
-            return -1;
+    pq_size = pq->pq_size;
+
+    if(t_size+1 > t_capacity)
+        resize_pq(pq);
+
+    for(int i = 0; i < t_size; i++) {
+        if(table[i].priority == item->priority) {
+            struct h_pq *tmp = xcalloc("offer_pq", 1, sizeof(tmp));
+
+            memcpy(tmp, &table[i], sizeof(*tmp));
+            memcpy(&table[i], item, sizeof(*table));
+
+            table[i].bucket = tmp;
+            pq_size += 1;
+
+            pq->pq_size = pq_size;
+
+            return pq_size;
         }
     }
 
     memcpy(&table[t_size], item, sizeof(*table));
     up_heapify_pq(pq, t_size, compare);
     t_size += 1;
+    pq_size += 1;
 
-    pq->pq_size = t_size;
+    pq->pq_nnodes = t_size;
+    pq->pq_size   = pq_size;
 
-    return t_size;
+    return pq_size;
 }
 
 int resize_pq(h_priority_queue *pq)
@@ -119,15 +138,10 @@ int resize_pq(h_priority_queue *pq)
 
     if(table == NULL) {
         if(t_capacity == 0) t_capacity = PQ_DEFAULT_CAPCITY;
-        table = calloc(t_capacity, sizeof(*table));
+        table = xcalloc("resize_pq",t_capacity, sizeof(*table));
     }else {
         t_capacity = t_capacity * 2;
-        table = realloc(table, t_capacity*sizeof(*table));
-    }
-
-    if(table == NULL) {
-        perror("func_(h_priority_queue/resize_pq): Cannot allocate memory, 'table' is NULL");
-        return -1;
+        table = xrealloc("resize_pq", table, t_capacity*sizeof(*table));
     }
 
     pq->pq_array = table;
@@ -145,7 +159,7 @@ void down_heapify_pq(const h_priority_queue *pq, uint64_t i,
     uint64_t t_size;
     struct h_pq *table;
 
-    t_size = pq->pq_size;
+    t_size = pq->pq_nnodes;
     table = pq->pq_array;
 
     while(2*i+1 < t_size) {

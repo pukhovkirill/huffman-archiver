@@ -16,11 +16,13 @@ struct h_tree {
 struct h_pq {
     struct h_tree *p_node;
     uint64_t priority;
+    struct h_pq *bucket;
 };
 
 typedef struct {
     struct h_pq *pq_array;
     uint64_t pq_capacity;
+    uint64_t pq_nnodes;
     uint64_t pq_size;
 } h_priority_queue;
 

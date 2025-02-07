@@ -3,7 +3,7 @@
 #include <CUnit/Basic.h>
 #include "h_priority_queue.h"
 
-#include "utils.h"
+#include "../utils.h"
 
 int h_pq_compare(const struct h_pq *a, const struct h_pq *b)
 {
@@ -26,6 +26,7 @@ TEST_FUNCT(build_pq)
     CU_ASSERT(pq->pq_array != NULL);
     CU_ASSERT(pq->pq_capacity == 32);
     CU_ASSERT(pq->pq_size == 3);
+    CU_ASSERT(pq->pq_nnodes == 3);
     CU_ASSERT(table[0].priority <= table[1].priority);
     CU_ASSERT(table[1].priority <= table[2].priority);
 
@@ -49,6 +50,7 @@ TEST_FUNCT(build_pq_with_zeros)
     CU_ASSERT(pq->pq_array != NULL);
     CU_ASSERT(pq->pq_capacity == 32);
     CU_ASSERT(pq->pq_size == 3);
+    CU_ASSERT(pq->pq_nnodes == 3);
     CU_ASSERT(table[0].priority <= table[1].priority);
     CU_ASSERT(table[1].priority <= table[2].priority);
 
@@ -73,6 +75,7 @@ TEST_FUNCT(pull_pq)
     pq->pq_array = table;
     pq->pq_capacity = capacity;
     pq->pq_size = 3;
+    pq->pq_nnodes = 3;
 
     const struct h_pq item = pull_pq(pq, h_pq_compare);
 
@@ -100,6 +103,7 @@ TEST_FUNCT(offer_pq)
     pq->pq_array = table;
     pq->pq_capacity = capacity;
     pq->pq_size = 3;
+    pq->pq_nnodes = 3;
 
     struct h_pq item;
     item.p_node = (struct h_tree *){0};

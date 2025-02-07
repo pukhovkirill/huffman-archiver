@@ -4,11 +4,7 @@ int push_sck(h_stack *stack, void *value)
 {
     struct h_sck *tmp;
 
-    tmp = calloc(1, sizeof(*tmp));
-    if(tmp == NULL) {
-        perror("func_(h_stack/push_sck): Cannot allocate memory, 'temp' is NULL");
-        return -1;
-    }
+    tmp = xcalloc("push_sck", 1, sizeof(*tmp));
 
     tmp->next = stack->head;
     tmp->value = value;

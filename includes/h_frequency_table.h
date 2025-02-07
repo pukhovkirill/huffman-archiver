@@ -1,7 +1,3 @@
-//
-// Created by yukir on 06/02/25.
-//
-
 #ifndef H_FREQUENCY_TABLE_H
 #define H_FREQUENCY_TABLE_H
 
@@ -9,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "huffman.h"
+#include "utils.h"
 
 #endif //H_FREQUENCY_TABLE_H
 

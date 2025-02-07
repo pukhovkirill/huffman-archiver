@@ -3,7 +3,7 @@
 #include <CUnit/Basic.h>
 #include "huffman/h_priority_queue.c"
 
-#include "utils.h"
+#include "../utils.h"
 
 int h_pq_compare(const struct h_pq *a, const struct h_pq *b)
 {
@@ -80,6 +80,7 @@ TEST_FUNCT(down_heapify_pq)
     pq->pq_array = table;
     pq->pq_capacity = 7;
     pq->pq_size = 7;
+    pq->pq_nnodes = 7;
 
     down_heapify_pq(pq, 0, &h_pq_compare);
 
@@ -111,6 +112,7 @@ TEST_FUNCT(up_heapify_pq)
     pq->pq_array = table;
     pq->pq_capacity = 7;
     pq->pq_size = 7;
+    pq->pq_nnodes = 7;
 
     up_heapify_pq(pq, 6, &h_pq_compare);
 

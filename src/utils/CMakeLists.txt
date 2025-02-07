@@ -15,11 +15,11 @@ file(GLOB LIB_SRC "*.c")
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/../../includes"
         "${CMAKE_CURRENT_SOURCE_DIR}/../")
-add_library(arc SHARED ${LIB_SRC})
-add_library(arcs STATIC ${LIB_SRC})
+add_library(util SHARED ${LIB_SRC})
+add_library(utils STATIC ${LIB_SRC})
 
-set_target_properties(arc PROPERTIES VERSION ${LIB_VERSION_STRING})
-set_target_properties(arcs PROPERTIES VERSION ${LIB_VERSION_STRING})
+set_target_properties(util PROPERTIES VERSION ${LIB_VERSION_STRING})
+set_target_properties(utils PROPERTIES VERSION ${LIB_VERSION_STRING})
 
-install(TARGETS arc DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
-install(TARGETS arcs DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
+install(TARGETS util DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
+install(TARGETS utils DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})

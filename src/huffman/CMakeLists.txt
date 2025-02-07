@@ -13,9 +13,9 @@ set(LIB_VERSION_STRING ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR})
 
 file(GLOB LIB_SRC "*.c")
 
-include_directories(../../includes)
-add_library(huff SHARED ${LIB_SRC}
-        h_frequency_table.c)
+include_directories( "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/../../includes"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../")
+add_library(huff SHARED ${LIB_SRC})
 add_library(huffs STATIC ${LIB_SRC})
 
 set_target_properties(huff PROPERTIES VERSION ${LIB_VERSION_STRING})

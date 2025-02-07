@@ -1,6 +1,6 @@
 MACRO(add_module file)
     add_library( ${file} MODULE ${file}.c ../utils.c )
-    target_link_libraries( ${file} cunit huff)
+    target_link_libraries( ${file} cunit huff arc util)
     set_target_properties( ${file} PROPERTIES
             PREFIX ""
             LIBRARY_OUTPUT_DIRECTORY "."

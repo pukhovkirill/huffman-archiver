@@ -3,7 +3,7 @@
 #include <CUnit/Basic.h>
 #include "h_stack.h"
 
-#include "utils.h"
+#include "../utils.h"
 
 TEST_FUNCT(push_n_pop_sck)
 {
