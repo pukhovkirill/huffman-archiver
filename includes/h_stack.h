@@ -7,13 +7,13 @@
 #include "utils.h"
 
 struct h_sck {
-    void *value;
-    struct h_sck *next;
+    void          *value;
+    struct h_sck  *next;
 };
 
 typedef struct {
-    struct h_sck *head;
-    uint64_t size;
+    struct h_sck  *head;
+    uint64_t      size;
 } h_stack;
 
 #endif //H_STACK_H
