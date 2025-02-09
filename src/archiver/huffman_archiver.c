@@ -108,8 +108,8 @@ void write_header(struct huff_hdr *hdr, const uint8_t flags, const uint8_t ft_si
 
     if(flags & F_CRC_HEADER_EXISTS) {
         const uint16_t crc = checksum(hdr, sizeof(*hdr));
-        hdr->checksum[1]   = (uint8_t)(crc      & 255);
-        hdr->checksum[0]   = (uint8_t)(crc >> 8 & 255);
+        hdr->checksum[0]   = (uint8_t)(crc      & 255);
+        hdr->checksum[1]   = (uint8_t)(crc >> 8 & 255);
     }
 }
 
@@ -147,13 +147,13 @@ void write_file_header(struct f_hdr     *f_hdr,
         memcpy(&f_hdr->f_tail_len, &lst_blk_len,    sizeof(f_hdr->f_tail_len));
     }
 
-    f_hdr->f_blk_cnt[1] = (uint8_t)(blk_cnt      & 255);
-    f_hdr->f_blk_cnt[0] = (uint8_t)(blk_cnt >> 8 & 255);
+    f_hdr->f_blk_cnt[0] = (uint8_t)(blk_cnt      & 255);
+    f_hdr->f_blk_cnt[1] = (uint8_t)(blk_cnt >> 8 & 255);
 
     if(flags & F_CRC_FILES_EXISTS) {
         const uint16_t crc = checksum(f_hdr, sizeof(*f_hdr));
-        f_hdr->checksum[1] = (uint8_t)(crc      & 255);
-        f_hdr->checksum[0] = (uint8_t)(crc >> 8 & 255);
+        f_hdr->checksum[0] = (uint8_t)(crc      & 255);
+        f_hdr->checksum[1] = (uint8_t)(crc >> 8 & 255);
     }
 }
 
