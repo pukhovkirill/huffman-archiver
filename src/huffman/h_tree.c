@@ -1,9 +1,13 @@
+#include <stdlib.h>
+#include <string.h>
 #include "h_tree.h"
 #include "h_priority_queue.h"
 #include "h_stack.h"
+#include "huffman.h"
+#include "utils.h"
 
 struct pair {
-    char           code;
+    char           code[256];
     struct h_tree  *node;
 };
 
@@ -61,14 +65,16 @@ static void read_h_tree(char **t_table, struct h_tree *tree)
     h_stack        *stack;
     struct h_tree  *node;
     const size_t   s_capacity = 256;
-    size_t         s_size     = 0;
     char           code[s_capacity];
+    size_t         s_size;
 
     memset(code, 0, s_capacity*sizeof(*code));
 
     stack               = xcalloc("read_h_tree", 1, sizeof(*stack));
     struct pair *n_pair = xcalloc("read_h_tree", 1, sizeof(*n_pair));
+
     n_pair->node        = tree;
+    memcpy(n_pair->code, "", 1);
 
     push_sck(stack, n_pair);
 
@@ -76,21 +82,11 @@ static void read_h_tree(char **t_table, struct h_tree *tree)
         pop_sck(stack, (void **)&n_pair);
         node = n_pair->node;
 
-        const char ch = n_pair->code;
-
-        if(ch != 0)
-            code[s_size++] = ch;
-
-        free(n_pair);
-
         if(node != NULL) {
             if(node->bit0 == NULL && node->bit1 == NULL) {
                 const int i = node->character;
                 t_table[i]  = xcalloc("read_h_tree", s_capacity, sizeof(char));
-
-                memcpy(t_table[i], code, s_capacity);
-
-                code[--s_size] = 0;
+                memcpy(t_table[i], n_pair->code, s_capacity);
             }
         }
 
@@ -98,16 +94,26 @@ static void read_h_tree(char **t_table, struct h_tree *tree)
         if(node->bit1 != NULL) {
             b_pair       = xcalloc("read_h_tree", 1, sizeof(*b_pair));
             b_pair->node = node->bit1;
-            b_pair->code = '1';
+
+            s_size = strlen(n_pair->code);
+            memcpy(b_pair->code, n_pair->code, s_size);
+            b_pair->code[s_size] = '1';
+
             push_sck(stack, b_pair);
         }
 
         if(node->bit0 != NULL) {
             b_pair       = xcalloc("read_h_tree", 1, sizeof(*b_pair));
             b_pair->node = node->bit0;
-            b_pair->code = '0';
+
+            s_size = strlen(n_pair->code);
+            memcpy(b_pair->code, n_pair->code, s_size);
+            b_pair->code[s_size] = '0';
+
             push_sck(stack, b_pair);
         }
+
+        free(n_pair);
     }
 
     free(stack);
@@ -126,10 +132,32 @@ int h_codes_gen(char ***p_buf, struct h_tree *tree)
 
 void free_tree(struct h_tree *tree)
 {
+    h_stack        *stack;
+    struct h_tree  *node;
 
+    stack = xcalloc("read_h_tree", 1, sizeof(*stack));
+    push_sck(stack, tree);
+
+    while(stack->size > 0) {
+        pop_sck(stack, (void **)&node);
+
+        if(node->bit0 != NULL)
+            push_sck(stack, node->bit0);
+
+        if(node->bit1 != NULL)
+            push_sck(stack, node->bit1);
+
+        free(node);
+    }
+
+    free(stack);
 }
 
 void free_codes(char **codes)
 {
-
+    for(int i = 0; i < TABLE_SIZE; i++) {
+        if(codes[i] != NULL)
+            free(codes[i]);
+    }
+    free(codes);
 }

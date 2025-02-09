@@ -1,13 +1,10 @@
 #ifndef ARCHIVER_H
 #define ARCHIVER_H
-#define _GNU_SOURCE
 
 #include <stdio.h>
-#include <inttypes.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <math.h>
+#include <stdint.h>
+
+#define BLK_SIZE 512
 
 struct achv_file {
 
@@ -19,11 +16,12 @@ struct achv_file {
         uint8_t f_mtime[16];
         uint8_t f_size[8];
         uint8_t f_blk_cnt[2];
+        uint8_t f_tail_len[2];
         uint8_t checksum[2];
     };
 
     struct f_blk {
-        uint8_t data[512];
+        uint8_t data[BLK_SIZE];
         struct f_blk *next;
     };
 
@@ -57,6 +55,7 @@ struct ft_record{
 
 #endif //ARCHIVER_H
 
-void *extract_archive(FILE *achv, uint8_t flags);
+uint16_t checksum(const void *b, size_t len);
+void *extract_archive(FILE *f_achv);
 void *create_archive(char **f_pths, size_t f_cnt, uint8_t flags);
-void *append_to_archive(FILE *achv, uint8_t flags, FILE **fls, size_t f_cnt);
+void *append_to_archive(FILE *f_achv, FILE **fls, size_t f_cnt);

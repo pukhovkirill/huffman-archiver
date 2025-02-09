@@ -1,4 +1,6 @@
 #include "h_stack.h"
+#include <stdlib.h>
+#include "utils.h"
 
 int push_sck(h_stack *stack, void *value)
 {

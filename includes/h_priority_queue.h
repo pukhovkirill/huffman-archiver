@@ -1,11 +1,8 @@
 #ifndef H_PRIORITY_QUEUE_H
 #define H_PRIORITY_QUEUE_H
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include "huffman.h"
-#include "utils.h"
 
 #endif //H_PRIORITY_QUEUE_H
 

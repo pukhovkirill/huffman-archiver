@@ -1,10 +1,7 @@
 #ifndef H_STACK_H
 #define H_STACK_H
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <inttypes.h>
-#include "utils.h"
 
 struct h_sck {
     void          *value;

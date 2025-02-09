@@ -1,11 +1,8 @@
 #ifndef H_FREQUENCY_TABLE_H
 #define H_FREQUENCY_TABLE_H
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include "huffman.h"
-#include "utils.h"
+#include <huffman.h>
 
 #endif //H_FREQUENCY_TABLE_H
 

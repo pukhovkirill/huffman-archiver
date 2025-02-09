@@ -1,8 +1,7 @@
 #ifndef H_TREE_H
 #define H_TREE_H
 
-#include <stdio.h>
-#include "huffman.h"
+#include <huffman.h>
 
 #endif //H_TREE_H
 

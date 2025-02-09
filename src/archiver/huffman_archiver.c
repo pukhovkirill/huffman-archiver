@@ -1,33 +1,29 @@
+#define _GNU_SOURCE
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include "utils.h"
 #include "archiver.h"
-
-#ifndef HUFFMAN_ARCHIVER_C
-#define HUFFMAN_ARCHIVER_C
-
 #include "h_frequency_table.h"
-#include "h_priority_queue.h"
 #include "h_tree.h"
-
-#define BLK_SIZE 512
-
-#endif //HUFFMAN_ARCHIVER_C
+#include "huffman.h"
 
 static char **codes;
 
-static uint16_t checksum(const void *b, size_t len);
-
 static size_t write_freq_table(uint32_t **buf, const struct h_pq *table, size_t t_size);
-static void create_header(struct huff_hdr *hdr, uint8_t flags, uint8_t ft_size);
-
-static void create_file_header(struct f_hdr  *f_hdr,
-                               int           fd,
-                               const char    *f_name,
-                               uint16_t      blk_cnt,
-                               uint8_t       flags);
-
-void encode_file(struct achv_file  *buf,
-                 FILE              *file,
-                 const char        *f_name,
-                 uint8_t           flags);
+static void write_header(struct huff_hdr *hdr, uint8_t flags, uint8_t ft_size);
+static void write_file_header(struct f_hdr  *f_hdr,
+                              int           fd,
+                              const char    *f_name,
+                              uint16_t      blk_cnt,
+                              uint16_t      lst_blk_len,
+                              uint8_t       flags);
+static void encode_file(struct achv_file  *buf,
+                        FILE              *file,
+                        const char        *f_name,
+                        uint8_t           flags);
 
 void *create_archive(char **f_pths, const size_t f_cnt, const uint8_t flags)
 {
@@ -37,7 +33,7 @@ void *create_archive(char **f_pths, const size_t f_cnt, const uint8_t flags)
     struct huff_achv  *achv;
 
     FILE **f_lst;
-    f_lst = malloc(f_cnt * sizeof(*f_lst));
+    f_lst = xmalloc("create_archive", f_cnt * sizeof(*f_lst));
 
     for(int i = 0; i < f_cnt; i++) {
         FILE *f = fopen(f_pths[i], "r");
@@ -64,7 +60,7 @@ void *create_archive(char **f_pths, const size_t f_cnt, const uint8_t flags)
     achv = xcalloc("create_archive", 1, sizeof(*achv));
 
     const uint8_t ft_size = write_freq_table(&achv->freq_table, table, tbl_size);
-    create_header(&achv->hdr, flags, ft_size);
+    write_header(&achv->hdr, flags, ft_size);
     achv->files = arch_files;
 
     for(int i = 0; i < f_cnt; i++) {
@@ -74,21 +70,6 @@ void *create_archive(char **f_pths, const size_t f_cnt, const uint8_t flags)
     free(table);
     free_codes(codes);
     return achv;
-}
-
-uint16_t checksum(const void *b, size_t len)
-{
-    register uint32_t  sum;
-    const    uint16_t  *buf = b;
-
-    for(sum = 0; len > 1; len -= 2)
-        sum += *buf++;
-    if(len == 1)
-        sum += *buf;
-
-    sum = (sum >> 16) + (sum & 0xFFFF);
-    sum = sum + sum >> 16;
-    return ~sum;
 }
 
 size_t write_freq_table(uint32_t **buf, const struct h_pq *table, const size_t t_size)
@@ -114,7 +95,7 @@ size_t write_freq_table(uint32_t **buf, const struct h_pq *table, const size_t t
     return ft_size;
 }
 
-void create_header(struct huff_hdr *hdr, const uint8_t flags, const uint8_t ft_size)
+void write_header(struct huff_hdr *hdr, const uint8_t flags, const uint8_t ft_size)
 {
     memset(hdr, 0, sizeof(*hdr));
     // HFS
@@ -132,11 +113,22 @@ void create_header(struct huff_hdr *hdr, const uint8_t flags, const uint8_t ft_s
     }
 }
 
-void create_file_header(struct f_hdr     *f_hdr,
-                        const  int       fd,
-                        const  char      *f_name,
-                        const  uint16_t  blk_cnt,
-                        const  uint8_t   flags)
+static char *filename(char *f_name, const size_t len)
+{
+    size_t offst = 0;
+    for(size_t i = 0; i < len; i++) {
+        if(f_name[i] == '/')
+            offst = i+1;
+    }
+    return &f_name[offst];
+}
+
+void write_file_header(struct f_hdr     *f_hdr,
+                       const  int       fd,
+                       const  char      *f_name,
+                       const  uint16_t  blk_cnt,
+                       const  uint16_t  lst_blk_len,
+                       const  uint8_t   flags)
 {
     memset(f_hdr, 0, sizeof(*f_hdr));
 
@@ -144,12 +136,15 @@ void create_file_header(struct f_hdr     *f_hdr,
         struct stat f_stat;
         fstat(fd, &f_stat);
 
-        memcpy(&f_hdr->f_name,   f_name,          100);
-        memcpy(&f_hdr->f_mode,   &f_stat.st_mode, sizeof(f_stat.st_mode));
-        memcpy(&f_hdr->f_own_id, &f_stat.st_uid,  sizeof(f_stat.st_uid));
-        memcpy(&f_hdr->f_grp_id, &f_stat.st_gid,  sizeof(f_stat.st_gid));
-        memcpy(&f_hdr->f_mtime,  &f_stat.st_mtim, sizeof(f_stat.st_mtim));
-        memcpy(&f_hdr->f_size,   &f_stat.st_size, sizeof(f_stat.st_size));
+        const char *name = filename((char *)f_name, strlen(f_name));
+
+        memcpy(&f_hdr->f_name,     name,            strlen(name));
+        memcpy(&f_hdr->f_mode,     &f_stat.st_mode, sizeof(f_hdr->f_mode));
+        memcpy(&f_hdr->f_own_id,   &f_stat.st_uid,  sizeof(f_hdr->f_own_id));
+        memcpy(&f_hdr->f_grp_id,   &f_stat.st_gid,  sizeof(f_hdr->f_grp_id));
+        memcpy(&f_hdr->f_mtime,    &f_stat.st_mtim, sizeof(f_hdr->f_mtime));
+        memcpy(&f_hdr->f_size,     &f_stat.st_size, sizeof(f_hdr->f_size));
+        memcpy(&f_hdr->f_tail_len, &lst_blk_len,    sizeof(f_hdr->f_tail_len));
     }
 
     f_hdr->f_blk_cnt[1] = (uint8_t)(blk_cnt      & 255);
@@ -209,8 +204,12 @@ void encode_file(struct achv_file  *buf,
         }
     }
 
+    if(bit > 1) {
+        f_blks->data[f_next_bit++] = sum;
+    }
+
     rewind(file);
 
     buf->f_blks = f_blks_start;
-    create_file_header(&buf->f_hdr, fileno(file), f_name, blk_cnt, flags);
+    write_file_header(&buf->f_hdr, fileno(file), f_name, blk_cnt, f_next_bit, flags);
 }

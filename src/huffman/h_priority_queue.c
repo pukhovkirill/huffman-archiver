@@ -1,4 +1,8 @@
 #include "h_priority_queue.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include "utils.h"
 
 #define PQ_DEFAULT_CAPCITY 32
 

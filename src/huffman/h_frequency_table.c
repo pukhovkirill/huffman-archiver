@@ -1,4 +1,8 @@
 #include "h_frequency_table.h"
+#include <stdint.h>
+#include <string.h>
+#include "utils.h"
+
 
 static void processing_file(FILE *file, struct h_pq *table);
 
