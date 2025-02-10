@@ -25,7 +25,7 @@ struct h_tree *build_tree(const struct h_pq *f_table, const size_t f_size)
 
     pq = build_pq(f_table, f_size, &h_pq_compare);
 
-    while(pq->pq_size > 1) {
+    while(!is_left_alone(pq)) {
         item1 = pull_pq(pq, &h_pq_compare);
         item2 = pull_pq(pq, &h_pq_compare);
 

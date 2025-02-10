@@ -98,3 +98,5 @@ struct h_pq pull_pq(h_priority_queue *pq,
  */
 int offer_pq(h_priority_queue *pq, const struct h_pq *item,
     int (*compare)(const struct h_pq *a, const struct h_pq *b));
+
+int is_left_alone(const h_priority_queue *pq);

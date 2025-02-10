@@ -79,7 +79,6 @@ TEST_FUNCT(down_heapify_pq)
     h_priority_queue *pq = calloc(1, sizeof(*pq));
     pq->pq_array = table;
     pq->pq_capacity = 7;
-    pq->pq_size = 7;
     pq->pq_nnodes = 7;
 
     down_heapify_pq(pq, 0, &h_pq_compare);
@@ -111,7 +110,6 @@ TEST_FUNCT(up_heapify_pq)
     h_priority_queue *pq = calloc(1, sizeof(*pq));
     pq->pq_array = table;
     pq->pq_capacity = 7;
-    pq->pq_size = 7;
     pq->pq_nnodes = 7;
 
     up_heapify_pq(pq, 6, &h_pq_compare);

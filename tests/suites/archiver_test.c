@@ -22,7 +22,7 @@ TEST_FUNCT(create_archive)
     struct huff_achv *achv = create_archive(files, 1, flags);
 
     CU_ASSERT(achv != NULL);
-    CU_ASSERT(achv->hdr.ft_len == 5);
+    CU_ASSERT(achv->hdr.ft_len[0] == 5);
 
     CU_ASSERT(achv->files != NULL);
     CU_ASSERT(achv->files->f_hdr.f_blk_cnt[0] == 1);

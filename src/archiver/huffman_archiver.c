@@ -13,11 +13,11 @@
 static char **codes;
 
 static size_t write_freq_table(uint32_t **buf, const struct h_pq *table, size_t t_size);
-static void write_header(struct huff_hdr *hdr, uint8_t flags, uint8_t ft_size);
+static void write_header(struct huff_hdr *hdr, uint8_t flags, uint16_t ft_size);
 static void write_file_header(struct f_hdr  *f_hdr,
                               int           fd,
                               const char    *f_name,
-                              uint16_t      blk_cnt,
+                              uint32_t      blk_cnt,
                               uint16_t      lst_blk_len,
                               uint8_t       flags);
 static void encode_file(struct achv_file  *buf,
@@ -59,7 +59,7 @@ void *create_archive(char **f_pths, const size_t f_cnt, const uint8_t flags)
 
     achv = xcalloc("create_archive", 1, sizeof(*achv));
 
-    const uint8_t ft_size = write_freq_table(&achv->freq_table, table, tbl_size);
+    const uint16_t ft_size = write_freq_table(&achv->freq_table, table, tbl_size);
     write_header(&achv->hdr, flags, ft_size);
     achv->files = arch_files;
 
@@ -95,21 +95,21 @@ size_t write_freq_table(uint32_t **buf, const struct h_pq *table, const size_t t
     return ft_size;
 }
 
-void write_header(struct huff_hdr *hdr, const uint8_t flags, const uint8_t ft_size)
+void write_header(struct huff_hdr *hdr, const uint8_t flags, const uint16_t ft_size)
 {
     memset(hdr, 0, sizeof(*hdr));
     // HFS
     hdr->magic[0]    = 0x48;
     hdr->magic[1]    = 0x1c;
-    hdr->version[0]  = 0;
-    hdr->version[1]  = 1;
+    hdr->version     = 1;
     hdr->flags       = flags;
-    hdr->ft_len      = ft_size;
+    hdr->ft_len[0]   = ft_size      & 255;
+    hdr->ft_len[1]  += ft_size >> 8 & 255;
 
     if(flags & F_CRC_HEADER_EXISTS) {
         const uint16_t crc = checksum(hdr, sizeof(*hdr));
-        hdr->checksum[0]   = (uint8_t)(crc      & 255);
-        hdr->checksum[1]   = (uint8_t)(crc >> 8 & 255);
+        hdr->checksum[0]   = crc      & 255;
+        hdr->checksum[1]   = crc >> 8 & 255;
     }
 }
 
@@ -126,15 +126,16 @@ static char *filename(char *f_name, const size_t len)
 void write_file_header(struct f_hdr     *f_hdr,
                        const  int       fd,
                        const  char      *f_name,
-                       const  uint16_t  blk_cnt,
+                       const  uint32_t  blk_cnt,
                        const  uint16_t  lst_blk_len,
                        const  uint8_t   flags)
 {
     memset(f_hdr, 0, sizeof(*f_hdr));
 
+    struct stat f_stat;
+    fstat(fd, &f_stat);
+
     if(flags & F_FILE_ATTRIBUTES_STORED) {
-        struct stat f_stat;
-        fstat(fd, &f_stat);
 
         const char *name = filename((char *)f_name, strlen(f_name));
 
@@ -143,17 +144,16 @@ void write_file_header(struct f_hdr     *f_hdr,
         memcpy(&f_hdr->f_own_id,   &f_stat.st_uid,  sizeof(f_hdr->f_own_id));
         memcpy(&f_hdr->f_grp_id,   &f_stat.st_gid,  sizeof(f_hdr->f_grp_id));
         memcpy(&f_hdr->f_mtime,    &f_stat.st_mtim, sizeof(f_hdr->f_mtime));
-        memcpy(&f_hdr->f_size,     &f_stat.st_size, sizeof(f_hdr->f_size));
         memcpy(&f_hdr->f_tail_len, &lst_blk_len,    sizeof(f_hdr->f_tail_len));
     }
 
-    f_hdr->f_blk_cnt[0] = (uint8_t)(blk_cnt      & 255);
-    f_hdr->f_blk_cnt[1] = (uint8_t)(blk_cnt >> 8 & 255);
+    memcpy(&f_hdr->f_size,     &f_stat.st_size, sizeof(f_hdr->f_size));
+    memcpy(&f_hdr->f_blk_cnt, &blk_cnt, sizeof(f_hdr->f_blk_cnt));
 
     if(flags & F_CRC_FILES_EXISTS) {
         const uint16_t crc = checksum(f_hdr, sizeof(*f_hdr));
-        f_hdr->checksum[0] = (uint8_t)(crc      & 255);
-        f_hdr->checksum[1] = (uint8_t)(crc >> 8 & 255);
+        f_hdr->checksum[0] = crc      & 255;
+        f_hdr->checksum[1] = crc >> 8 & 255;
     }
 }
 
@@ -162,7 +162,7 @@ void encode_file(struct achv_file  *buf,
                  const  char       *f_name,
                  const  uint8_t    flags)
 {
-    uint16_t      blk_cnt;
+    uint32_t      blk_cnt;
     struct f_blk  *f_blks_start;
     struct f_blk  *f_blks;
     uint16_t      f_next_bit;
@@ -173,12 +173,12 @@ void encode_file(struct achv_file  *buf,
     blk_cnt       = 1;
     f_next_bit    = 0;
 
-    char ch;
+    int ch;
     uint8_t sum = 0;
     uint8_t bit = 1;
 
     while((ch = fgetc(file)) != EOF) {
-        const char *code = codes[(int)ch];
+        const char *code = codes[ch];
         const int  c_len = strlen(code);
 
         for(int i = 0; i < c_len; i++) {
@@ -197,7 +197,7 @@ void encode_file(struct achv_file  *buf,
                 f_blks      = f_blks->next;
                 blk_cnt     = blk_cnt + 1;
 
-                f_blks->data[f_next_bit] = sum;
+                f_blks->data[f_next_bit++] = sum;
                 sum = 0;
                 bit = 1;
             }
@@ -206,6 +206,8 @@ void encode_file(struct achv_file  *buf,
 
     if(bit > 1) {
         f_blks->data[f_next_bit++] = sum;
+    }else {
+        f_next_bit = 0;
     }
 
     rewind(file);

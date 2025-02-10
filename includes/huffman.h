@@ -23,7 +23,6 @@ typedef struct {
     struct h_pq  *pq_array;
     uint64_t     pq_capacity;
     uint64_t     pq_nnodes;
-    uint64_t     pq_size;
 } h_priority_queue;
 
 #endif //HUFFMAN_H

@@ -25,7 +25,6 @@ TEST_FUNCT(build_pq)
 
     CU_ASSERT(pq->pq_array != NULL);
     CU_ASSERT(pq->pq_capacity == 32);
-    CU_ASSERT(pq->pq_size == 3);
     CU_ASSERT(pq->pq_nnodes == 3);
     CU_ASSERT(table[0].priority <= table[1].priority);
     CU_ASSERT(table[1].priority <= table[2].priority);
@@ -49,7 +48,6 @@ TEST_FUNCT(build_pq_with_zeros)
 
     CU_ASSERT(pq->pq_array != NULL);
     CU_ASSERT(pq->pq_capacity == 32);
-    CU_ASSERT(pq->pq_size == 3);
     CU_ASSERT(pq->pq_nnodes == 3);
     CU_ASSERT(table[0].priority <= table[1].priority);
     CU_ASSERT(table[1].priority <= table[2].priority);
@@ -74,13 +72,11 @@ TEST_FUNCT(pull_pq)
     pq = calloc(capacity, sizeof(*pq));
     pq->pq_array = table;
     pq->pq_capacity = capacity;
-    pq->pq_size = 3;
     pq->pq_nnodes = 3;
 
     const struct h_pq item = pull_pq(pq, h_pq_compare);
 
     CU_ASSERT(item.priority == 1);
-    CU_ASSERT(pq->pq_size == 2);
 
     free(table);
     free(pq);
@@ -102,7 +98,6 @@ TEST_FUNCT(offer_pq)
     pq = calloc(1, sizeof(*pq));
     pq->pq_array = table;
     pq->pq_capacity = capacity;
-    pq->pq_size = 3;
     pq->pq_nnodes = 3;
 
     struct h_pq item;
@@ -111,8 +106,8 @@ TEST_FUNCT(offer_pq)
 
     const int test_size = offer_pq(pq, &item,h_pq_compare);
 
-    CU_ASSERT(pq->pq_size == test_size);
     CU_ASSERT(pq->pq_capacity == 4);
+    CU_ASSERT(test_size == pq->pq_nnodes);
 
     free(table);
     free(pq);

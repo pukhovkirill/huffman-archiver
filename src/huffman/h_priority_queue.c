@@ -60,11 +60,9 @@ struct h_pq pull_pq(h_priority_queue *pq,
     struct h_pq  res = {0};
     struct h_pq  *table;
     uint64_t     t_size;
-    uint64_t     pq_size;
 
     table   = pq->pq_array;
     t_size  = pq->pq_nnodes;
-    pq_size = pq->pq_size;
 
     if(table[0].bucket != NULL) {
         struct h_pq *node;
@@ -78,8 +76,6 @@ struct h_pq pull_pq(h_priority_queue *pq,
         free(node->bucket);
         node->bucket = NULL;
 
-        pq->pq_size = pq_size-1;
-
         return res;
     }
 
@@ -87,7 +83,6 @@ struct h_pq pull_pq(h_priority_queue *pq,
     swap_pq(&table[0], &table[t_size-1]);
 
     pq->pq_nnodes = t_size-1;
-    pq->pq_size   = pq_size-1;
 
     down_heapify_pq(pq, 0, compare);
 
@@ -100,15 +95,16 @@ int offer_pq(h_priority_queue *pq, const struct h_pq *item,
     struct h_pq  *table;
     uint64_t     t_size;
     uint64_t     t_capacity;
-    uint64_t     pq_size;
 
     table      = pq->pq_array;
     t_size     = pq->pq_nnodes;
     t_capacity = pq->pq_capacity;
-    pq_size    = pq->pq_size;
 
-    if(t_size+1 > t_capacity)
+    if(t_size+1 > t_capacity) {
         resize_pq(pq);
+        table      = pq->pq_array;
+        t_size     = pq->pq_nnodes;
+    }
 
     for(int i = 0; i < t_size; i++) {
         if(table[i].priority == item->priority) {
@@ -118,10 +114,7 @@ int offer_pq(h_priority_queue *pq, const struct h_pq *item,
             memcpy(&table[i], item, sizeof(*table));
             table[i].bucket = tmp;
 
-            pq_size += 1;
-            pq->pq_size = pq_size;
-
-            return pq_size;
+            return t_capacity;
         }
     }
 
@@ -129,12 +122,19 @@ int offer_pq(h_priority_queue *pq, const struct h_pq *item,
     up_heapify_pq(pq, t_size, compare);
 
     t_size  += 1;
-    pq_size += 1;
 
     pq->pq_nnodes = t_size;
-    pq->pq_size   = pq_size;
 
-    return pq_size;
+    return t_size;
+}
+
+int is_left_alone(const h_priority_queue *pq)
+{
+    if(pq->pq_nnodes == 1){
+        if(pq->pq_array->bucket == NULL)
+            return 1;
+    }
+    return 0;
 }
 
 int resize_pq(h_priority_queue *pq)
