@@ -18,13 +18,13 @@ static struct h_tree *tree;
 
 static size_t read_freq_table(struct h_pq **buf, const uint32_t *bytes, size_t len);
 static size_t decode_file(uint8_t **buf, const struct achv_file *achv_f);
-static FILE *extract_file(struct achv_file *achv_f, uint8_t flags);
+static FILE *extract_file(struct achv_file *achv_f, const char *dst, uint8_t flags);
 
-void *extract_archive(const struct huff_achv *achv, const size_t f_cnt)
+void *extract_archive(const struct huff_achv *achv, const char *dst, const size_t f_cnt)
 {
-    uint16_t          tbl_size;
-    struct h_pq       *table;
-    FILE              **f_lst;
+    uint16_t     tbl_size;
+    struct h_pq  *table;
+    FILE         **f_lst;
 
     memcpy(&tbl_size, &achv->hdr.ft_len, sizeof(tbl_size));
 
@@ -34,7 +34,7 @@ void *extract_archive(const struct huff_achv *achv, const size_t f_cnt)
     f_lst = xmalloc("extract_archive", f_cnt * sizeof(*f_lst));
 
     for(int i = 0; i < f_cnt; i++) {
-        f_lst[i] = extract_file(&achv->files[i], achv->hdr.flags);
+        f_lst[i] = extract_file(&achv->files[i], dst, achv->hdr.flags);
     }
 
     return f_lst;
@@ -65,17 +65,14 @@ size_t decode_file(uint8_t **buf, const struct achv_file *achv_f)
 {
     uint64_t      n_bytes;
     uint8_t       *bytes;
-    uint16_t      blk_cnt;
+    uint32_t      blk_cnt;
     uint16_t      tail_len;
     struct f_blk  *f_blk;
 
-    blk_cnt  = achv_f->f_hdr.f_blk_cnt[1] << 8;
-    blk_cnt += achv_f->f_hdr.f_blk_cnt[0];
+    memcpy(&blk_cnt,  achv_f->f_hdr.f_blk_cnt,  sizeof(blk_cnt));
+    memcpy(&tail_len, achv_f->f_hdr.f_tail_len, sizeof(tail_len));
+    memcpy(&n_bytes,  achv_f->f_hdr.f_size,     sizeof(n_bytes));
 
-    tail_len  = achv_f->f_hdr.f_tail_len[1] << 8;
-    tail_len += achv_f->f_hdr.f_tail_len[0];
-
-    memcpy(&n_bytes, achv_f->f_hdr.f_size, sizeof(n_bytes));
     bytes = xmalloc("decode_file", n_bytes * sizeof(*bytes));
 
     size_t offst = 0;
@@ -125,15 +122,16 @@ size_t decode_file(uint8_t **buf, const struct achv_file *achv_f)
     return n_bytes;
 }
 
-FILE *extract_file(struct achv_file *achv_f, const uint8_t flags)
+FILE *extract_file(struct achv_file *achv_f, const char *dst, const uint8_t flags)
 {
     struct f_hdr  *hdr;
-    char          f_name[4096] = "/home/yukir/";
+    char          f_name[4096] = {0};
     uint8_t       *f_bytes;
 
-    hdr    = &achv_f->f_hdr;
+    hdr = &achv_f->f_hdr;
 
-    strcat(f_name, achv_f->f_hdr.f_name);
+    strncat(f_name, dst, sizeof(f_name)-strlen(f_name)-1);
+    strncat(f_name, achv_f->f_hdr.f_name, sizeof(f_name)-strlen(f_name)-1);
 
     uint16_t hdr_crc;
     hdr_crc  = hdr->checksum[1] << 8;
@@ -187,6 +185,8 @@ FILE *extract_file(struct achv_file *achv_f, const uint8_t flags)
         const struct timeval tvs[2] = { tv, tv };
         futimes(fd, tvs);
     }
+
+    rewind(f);
 
     return f;
 }

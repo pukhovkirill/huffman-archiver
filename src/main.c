@@ -8,7 +8,7 @@
 #include "h_stack.h"
 #include "archiver.h"
 
-static int f_cnt;
+static int files_cnt;
 static uint8_t flags;
 
 void write_achv(const char *dst, const struct huff_achv *src);
@@ -16,18 +16,18 @@ size_t read_achv(struct huff_achv **dst, FILE *src);
 
 int main(void)
 {
-    f_cnt = 1;
+    files_cnt = 1;
     char **files;
 
-    char file1[] = "/home/yukir/CLionProjects/huffman-archiver/tests/resources/test.txt";
-    files = calloc(f_cnt, sizeof(*files));
+    char file1[] = "/home/yukir/test/test.pdf";
+    files = calloc(files_cnt, sizeof(*files));
     files[0] = file1;
 
     flags |= F_CRC_HEADER_EXISTS;
     flags |= F_CRC_FILES_EXISTS;
     flags |= F_FILE_ATTRIBUTES_STORED;
 
-    const struct huff_achv *achv = create_archive(files, f_cnt, flags);
+    const struct huff_achv *achv = create_archive(files, files_cnt, flags);
 
     write_achv("/home/yukir/test1.hff", achv);
 
@@ -38,9 +38,9 @@ int main(void)
     FILE **f_lst;
 
     struct huff_achv *eachv;
-    const size_t f_cnt = read_achv(&eachv, f);
+    files_cnt = read_achv(&eachv, f);
 
-    f_lst = extract_archive(eachv, f_cnt);
+    f_lst = extract_archive(eachv, "/home/yukir/", files_cnt);
 
     fflush(f_lst[0]);
     fclose(f_lst[0]);
@@ -76,7 +76,7 @@ void write_achv(const char *dst, const struct huff_achv *src)
 
     // write 'f_cnt' files
     const struct achv_file *files = src->files;
-    for(int i = 0; i < f_cnt; i++) {
+    for(int i = 0; i < files_cnt; i++) {
         const struct achv_file *file = &files[i];
 
         // write 'i' file header
@@ -136,6 +136,8 @@ size_t read_achv(struct huff_achv **dst, FILE *src)
     struct huff_achv  *achv;
 
     achv = xcalloc("read_achv", 1, sizeof(*achv));
+
+    // read archive header
     read_achv_hdr((uint8_t *)&achv->hdr, src);
 
     ft_size = 0;
@@ -144,6 +146,7 @@ size_t read_achv(struct huff_achv **dst, FILE *src)
     struct ft_record *ft_table;
     ft_table = xcalloc("write_freq_table", ft_size, sizeof(*ft_table));
 
+    // read frequency table
     for(int i = 0; i < ft_size; i++) {
         fread(&ft_table[i], sizeof(*ft_table), 1, src);
     }
@@ -155,8 +158,10 @@ size_t read_achv(struct huff_achv **dst, FILE *src)
     uint8_t h_size = 0;
     uint8_t hdr[f_hdr_size];
 
+    // read files
     int ch;
     while((ch = fgetc(src)) != EOF) {
+        // read file header
         hdr[h_size++] = ch;
 
         if(h_size == f_hdr_size) {

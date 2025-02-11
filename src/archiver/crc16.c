@@ -12,7 +12,7 @@ uint16_t checksum(const void *b, size_t len)
     if(len == 1)
         sum += *buf;
 
-    sum = (sum >> 16) + (sum & 0xFFFF);
-    sum = sum + sum >> 16;
+    sum  = (sum >> 16) + (sum & 0xFFFF);
+    sum += sum >> 16;
     return ~sum;
 }

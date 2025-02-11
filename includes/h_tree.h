@@ -65,5 +65,25 @@ struct h_tree *build_tree(const struct h_pq *f_table, size_t f_size);
  */
 int h_codes_gen(char ***p_buf, struct h_tree *tree);
 
+/**
+ *
+ * @param tree - pointer to root of huffman tree
+ *
+ * function free memory allocated for huffman tree
+ *
+ * the function uses a non-recursive Depth-First Search (DFS)
+ * algorithm with an explicit stack to traverse and free
+ * all nodes of the tree.
+ */
 void free_tree(struct h_tree *tree);
+
+
+/**
+ *
+ * @param codes - pointer to code matrix
+ *
+ * function free memory allocated for code matrix
+ * all allocated memory for storing these codes
+ * will be released
+ */
 void free_codes(char **codes);

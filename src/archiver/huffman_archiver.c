@@ -167,7 +167,7 @@ void encode_file(struct achv_file  *buf,
     struct f_blk  *f_blks;
     uint16_t      f_next_bit;
 
-    f_blks = xmalloc("encode_file", sizeof(*f_blks));
+    f_blks = xcalloc("encode_file", 1, sizeof(*f_blks));
 
     f_blks_start  = f_blks;
     blk_cnt       = 1;
@@ -191,7 +191,7 @@ void encode_file(struct achv_file  *buf,
                 sum = 0;
                 bit = 1;
             }else {
-                f_blks->next = xmalloc("encode_file", sizeof(*f_blks));
+                f_blks->next = xcalloc("encode_file", 1, sizeof(*f_blks));
 
                 f_next_bit  = 0;
                 f_blks      = f_blks->next;
