@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "utils.h"
 #include "h_stack.h"
 #include "archiver.h"
@@ -13,9 +14,54 @@ static uint8_t flags;
 
 void write_achv(const char *dst, const struct huff_achv *src);
 size_t read_achv(struct huff_achv **dst, FILE *src);
+void list_of_files(const struct huff_achv *achv, size_t f_cnt);
+
+void usage(int status)
+{
+    if(status != EXIT_SUCCESS){
+
+    }else{
+        printf("Usage: huffer [OPTION]... [FILE]...\n");
+        fputs("\
+Compression and decompression of FILES \
+using pure Huffman algorithm.\n\
+\n\
+", stdout);
+
+        fputs("\
+Examples:\n\
+  huffer -c foo bar -o archive.hff\
+  # create archivee.hff from files foo and bar\n\
+  huffer -x archive.hff -o ./\
+       # extract all files from archive.hff\n\
+  huffer -l archive.hff\
+             # list all files in archive.hff\n\
+\n\
+", stdout);
+
+        fputs("\
+Keys:\n\
+  -a,  --append=<file...>           Append files to the archive\n\
+  -c,  --create=<file...>           Create a new archive from files <file...>\n\
+  -h,  --help                       Show this help\n\
+  -l,  --list=<file>                List the contents of the archive <file>\n\
+  -o,  --output=<file>              Place the output into <file>\n\
+                                    Can be a file or directory\n\
+  -v,  --version                    Display archiver version information\n\
+  -x,  --extract <file...>          Extract files from an archives <file...>\n\
+\n\
+Modifiers:\n\
+  --no-crc-files-check              Do not check files checksum during extraction\n\
+  --no-crc-header-check             Do not check archive checksum during extraction\n\
+  --no-preserve-file-attributes     Do not preserve file attributes\n\
+\n\
+", stdout);
+    }
+}
 
 int main(void)
 {
+    usage(EXIT_SUCCESS);
     files_cnt = 1;
     char **files;
 
@@ -177,7 +223,8 @@ size_t read_achv(struct huff_achv **dst, FILE *src)
             blk = xcalloc("read_achv", 1, sizeof(*blk));
 
             blk_start = blk;
-
+			
+			// read file blocks
             if(tail_len > 0)
                 blk_cnt -= 1;
 
@@ -194,7 +241,8 @@ size_t read_achv(struct huff_achv **dst, FILE *src)
 
             achv_f->f_blks = blk_start;
             memcpy(&achv_f->f_hdr, hdr, sizeof(achv_f->f_hdr));
-
+			
+			// add file to stack
             push_sck(stack, achv_f);
         }
     }
@@ -216,4 +264,11 @@ size_t read_achv(struct huff_achv **dst, FILE *src)
 
     free(stack);
     return f_cnt;
+}
+
+void list_of_files(const struct huff_achv *achv, const size_t f_cnt)
+{
+    for(size_t i = 0; i < f_cnt; i++){
+        // print files headers
+    }
 }

@@ -119,4 +119,4 @@ void *extract_archive(const struct huff_achv *achv, const char *dst, size_t f_cn
  * the files in 'fls' are compressed and added to the archive file 'f_achv'
  * without modifying previously stored files.
  */
-void *append_to_archive(FILE *f_achv, FILE **fls, size_t f_cnt);
+void *append_to_archive(struct huff_achv *achv, FILE **fls, size_t f_cnt);
