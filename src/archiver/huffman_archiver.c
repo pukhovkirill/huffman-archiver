@@ -39,7 +39,7 @@ void *create_archive(char **f_pths, const size_t f_cnt, const uint8_t flags)
         FILE *f = fopen(f_pths[i], "r");
         if(f == NULL) {
             fprintf(stderr, "create_archive: Failed to open file '%s'", f_pths[i]);
-            return NULL;
+            exit(EXIT_FAILURE);
         }
         f_lst[i] = f;
     }
