@@ -24,8 +24,8 @@ TEST_FUNCT(resize_pq)
 
     const int test_capacity = resize_pq(pq);
 
-    CU_ASSERT(test_capacity == capacity * 2);
-    CU_ASSERT(pq->pq_array != NULL);
+    CU_ASSERT(test_capacity == capacity * 2)
+    CU_ASSERT(pq->pq_array != NULL)
 
     free(pq->pq_array);
     free(pq);
@@ -41,8 +41,8 @@ TEST_FUNCT(resize_pq_when_table_is_NULL)
 
     const int test_capacity = resize_pq(pq);
 
-    CU_ASSERT(test_capacity == capacity);
-    CU_ASSERT(pq->pq_array != NULL);
+    CU_ASSERT(test_capacity == capacity)
+    CU_ASSERT(pq->pq_array != NULL)
 
     free(pq->pq_array);
     free(pq);
@@ -57,8 +57,8 @@ TEST_FUNCT(resize_pq_when_table_is_NULL_and_capacity_is_0)
 
     const int test_capacity = resize_pq(pq);
 
-    CU_ASSERT(test_capacity == capacity);
-    CU_ASSERT(pq->pq_array != NULL);
+    CU_ASSERT(test_capacity == capacity)
+    CU_ASSERT(pq->pq_array != NULL)
 
     free(pq->pq_array);
     free(pq);
@@ -83,14 +83,14 @@ TEST_FUNCT(down_heapify_pq)
 
     down_heapify_pq(pq, 0, &h_pq_compare);
 
-    CU_ASSERT(table[0].priority <= table[1].priority);
-    CU_ASSERT(table[0].priority <= table[2].priority);
+    CU_ASSERT(table[0].priority <= table[1].priority)
+    CU_ASSERT(table[0].priority <= table[2].priority)
 
-    CU_ASSERT(table[1].priority <= table[3].priority);
-    CU_ASSERT(table[1].priority <= table[4].priority);
+    CU_ASSERT(table[1].priority <= table[3].priority)
+    CU_ASSERT(table[1].priority <= table[4].priority)
 
-    CU_ASSERT(table[2].priority <= table[5].priority);
-    CU_ASSERT(table[2].priority <= table[6].priority);
+    CU_ASSERT(table[2].priority <= table[5].priority)
+    CU_ASSERT(table[2].priority <= table[6].priority)
 
     free(pq);
 }
@@ -114,14 +114,14 @@ TEST_FUNCT(up_heapify_pq)
 
     up_heapify_pq(pq, 6, &h_pq_compare);
 
-    CU_ASSERT(table[0].priority <= table[1].priority);
-    CU_ASSERT(table[0].priority <= table[2].priority);
+    CU_ASSERT(table[0].priority <= table[1].priority)
+    CU_ASSERT(table[0].priority <= table[2].priority)
 
-    CU_ASSERT(table[1].priority <= table[3].priority);
-    CU_ASSERT(table[1].priority <= table[4].priority);
+    CU_ASSERT(table[1].priority <= table[3].priority)
+    CU_ASSERT(table[1].priority <= table[4].priority)
 
-    CU_ASSERT(table[2].priority <= table[5].priority);
-    CU_ASSERT(table[2].priority <= table[6].priority);
+    CU_ASSERT(table[2].priority <= table[5].priority)
+    CU_ASSERT(table[2].priority <= table[6].priority)
 
     free(pq);
 }
@@ -137,11 +137,11 @@ TEST_FUNCT(swap_pq)
 
     swap_pq(&a, &b);
 
-    CU_ASSERT(a.p_node == &t_b);
-    CU_ASSERT(a.priority == 2);
+    CU_ASSERT(a.p_node == &t_b)
+    CU_ASSERT(a.priority == 2)
 
-    CU_ASSERT(b.p_node == &t_a);
-    CU_ASSERT(b.priority == 1);
+    CU_ASSERT(b.p_node == &t_a)
+    CU_ASSERT(b.priority == 1)
 }
 
 void runSuite(void)
@@ -150,7 +150,7 @@ void runSuite(void)
     if (suite) {
         ADD_SUITE_TEST(suite, resize_pq)
         ADD_SUITE_TEST(suite, resize_pq_when_table_is_NULL)
-        ADD_SUITE_TEST(suite, resize_pq_when_table_is_NULL_and_capacity_is_0);
+        ADD_SUITE_TEST(suite, resize_pq_when_table_is_NULL_and_capacity_is_0)
         ADD_SUITE_TEST(suite, down_heapify_pq)
         ADD_SUITE_TEST(suite, up_heapify_pq)
         ADD_SUITE_TEST(suite, swap_pq)

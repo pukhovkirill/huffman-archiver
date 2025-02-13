@@ -18,32 +18,32 @@ TEST_FUNCT(push_n_pop_sck)
     push_sck(stack, &value2);
     push_sck(stack, &value3);
 
-    CU_ASSERT(stack->size == 3);
-    CU_ASSERT(stack->head != NULL);
-    CU_ASSERT(stack->head->value != NULL);
-    CU_ASSERT(*(char *)stack->head->value == '3');
+    CU_ASSERT(stack->size == 3)
+    CU_ASSERT(stack->head != NULL)
+    CU_ASSERT(stack->head->value != NULL)
+    CU_ASSERT(*(char *)stack->head->value == '3')
 
     char *test_value;
 
     pop_sck(stack, (void **)&test_value);
 
-    CU_ASSERT(stack->size == 2);
-    CU_ASSERT(*test_value == '3');
-    CU_ASSERT(stack->head != NULL);
-    CU_ASSERT(*(char *)stack->head->value == '2');
+    CU_ASSERT(stack->size == 2)
+    CU_ASSERT(*test_value == '3')
+    CU_ASSERT(stack->head != NULL)
+    CU_ASSERT(*(char *)stack->head->value == '2')
 
     pop_sck(stack, (void **)&test_value);
 
-    CU_ASSERT(stack->size == 1);
-    CU_ASSERT(*test_value == '2');
-    CU_ASSERT(stack->head != NULL);
-    CU_ASSERT(*(char *)stack->head->value == '1');
+    CU_ASSERT(stack->size == 1)
+    CU_ASSERT(*test_value == '2')
+    CU_ASSERT(stack->head != NULL)
+    CU_ASSERT(*(char *)stack->head->value == '1')
 
     pop_sck(stack, (void **)&test_value);
 
-    CU_ASSERT(stack->size == 0);
-    CU_ASSERT(*test_value == '1');
-    CU_ASSERT(stack->head == NULL);
+    CU_ASSERT(stack->size == 0)
+    CU_ASSERT(*test_value == '1')
+    CU_ASSERT(stack->head == NULL)
 
     free(stack);
 }

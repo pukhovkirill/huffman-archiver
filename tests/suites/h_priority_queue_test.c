@@ -23,11 +23,11 @@ TEST_FUNCT(build_pq)
 
     h_priority_queue *pq = build_pq(table, t_size, h_pq_compare);
 
-    CU_ASSERT(pq->pq_array != NULL);
-    CU_ASSERT(pq->pq_capacity == 32);
-    CU_ASSERT(pq->pq_nnodes == 3);
-    CU_ASSERT(table[0].priority <= table[1].priority);
-    CU_ASSERT(table[1].priority <= table[2].priority);
+    CU_ASSERT(pq->pq_array != NULL)
+    CU_ASSERT(pq->pq_capacity == 32)
+    CU_ASSERT(pq->pq_nnodes == 3)
+    CU_ASSERT(table[0].priority <= table[1].priority)
+    CU_ASSERT(table[1].priority <= table[2].priority)
 
     free(table);
     free(pq);
@@ -46,11 +46,11 @@ TEST_FUNCT(build_pq_with_zeros)
 
     h_priority_queue *pq = build_pq(table, t_size, h_pq_compare);
 
-    CU_ASSERT(pq->pq_array != NULL);
-    CU_ASSERT(pq->pq_capacity == 32);
-    CU_ASSERT(pq->pq_nnodes == 3);
-    CU_ASSERT(table[0].priority <= table[1].priority);
-    CU_ASSERT(table[1].priority <= table[2].priority);
+    CU_ASSERT(pq->pq_array != NULL)
+    CU_ASSERT(pq->pq_capacity == 32)
+    CU_ASSERT(pq->pq_nnodes == 3)
+    CU_ASSERT(table[0].priority <= table[1].priority)
+    CU_ASSERT(table[1].priority <= table[2].priority)
 
     free(table);
     free(pq);
@@ -76,7 +76,7 @@ TEST_FUNCT(pull_pq)
 
     const struct h_pq item = pull_pq(pq, h_pq_compare);
 
-    CU_ASSERT(item.priority == 1);
+    CU_ASSERT(item.priority == 1)
 
     free(table);
     free(pq);
@@ -106,8 +106,8 @@ TEST_FUNCT(offer_pq)
 
     const int test_size = offer_pq(pq, &item,h_pq_compare);
 
-    CU_ASSERT(pq->pq_capacity == 4);
-    CU_ASSERT(test_size == pq->pq_nnodes);
+    CU_ASSERT(pq->pq_capacity == 4)
+    CU_ASSERT(test_size == pq->pq_nnodes)
 
     free(table);
     free(pq);

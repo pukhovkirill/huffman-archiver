@@ -20,10 +20,10 @@ TEST_FUNCT(build_tree)
     fclose(file);
     remove("test.txt");
 
-    CU_ASSERT(tree != NULL);
-    CU_ASSERT(tree->bit0->character == 'a');
-    CU_ASSERT(tree->bit1->bit1->character == 'b');
-    CU_ASSERT(tree->bit1->bit0->character == 'c');
+    CU_ASSERT(tree != NULL)
+    CU_ASSERT(tree->bit0->character == 'a')
+    CU_ASSERT(tree->bit1->bit1->character == 'b')
+    CU_ASSERT(tree->bit1->bit0->character == 'c')
 
     free(buf);
     free(tree->bit1);
@@ -51,11 +51,11 @@ TEST_FUNCT(h_codes_gen)
     fclose(file);
     remove("test.txt");
 
-    CU_ASSERT(res == 0);
-    CU_ASSERT(buf != NULL);
-    CU_ASSERT(strcmp(buf['a'], "0")  == 0);
-    CU_ASSERT(strcmp(buf['b'], "11") == 0);
-    CU_ASSERT(strcmp(buf['c'], "10") == 0);
+    CU_ASSERT(res == 0)
+    CU_ASSERT(buf != NULL)
+    CU_ASSERT(strcmp(buf['a'], "0")  == 0)
+    CU_ASSERT(strcmp(buf['b'], "11") == 0)
+    CU_ASSERT(strcmp(buf['c'], "10") == 0)
 
     free(tree->bit1);
     free(tree->bit0->bit0);

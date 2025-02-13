@@ -17,10 +17,10 @@ TEST_FUNCT(build_freq_table)
     fclose(file);
     remove("test.txt");
 
-    CU_ASSERT(result > 0);
-    CU_ASSERT(table['a'].priority == 3);
-    CU_ASSERT(table['b'].priority == 2);
-    CU_ASSERT(table['c'].priority == 1);
+    CU_ASSERT(result > 0)
+    CU_ASSERT(table['a'].priority == 3)
+    CU_ASSERT(table['b'].priority == 2)
+    CU_ASSERT(table['c'].priority == 1)
 
     free(table);
 }

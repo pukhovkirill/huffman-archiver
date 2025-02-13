@@ -26,8 +26,8 @@ TEST_FUNCT(extract_archive)
 
     f_lst = extract_archive(achv, "../../tests/resources/out/", 1);
 
-    CU_ASSERT(f_lst != NULL);
-    CU_ASSERT(f_lst[0] != NULL);
+    CU_ASSERT(f_lst != NULL)
+    CU_ASSERT(f_lst[0] != NULL)
 
     fputc(EOF, f_lst[0]);
     fflush(f_lst[0]);
@@ -36,14 +36,14 @@ TEST_FUNCT(extract_archive)
     int ch1;
     int ch2;
     while((ch1 = fgetc(f_lst[0])) != EOF && (ch2 = fgetc(test_f)) != EOF){
-        CU_ASSERT(ch1 == ch2);
+        CU_ASSERT(ch1 == ch2)
     }
 
     ch1 = fgetc(f_lst[0]);
     ch2 = fgetc(test_f);
 
-    CU_ASSERT(ch1 == ch2);
-    CU_ASSERT(ch1 == EOF);
+    CU_ASSERT(ch1 == ch2)
+    CU_ASSERT(ch1 == EOF)
 
     fclose(test_f);
     fclose(f_lst[0]);

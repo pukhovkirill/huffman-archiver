@@ -21,18 +21,18 @@ TEST_FUNCT(create_archive)
 
     struct huff_achv *achv = create_archive(files, 1, flags);
 
-    CU_ASSERT(achv != NULL);
-    CU_ASSERT(achv->hdr.ft_len[0] == 5);
+    CU_ASSERT(achv != NULL)
+    CU_ASSERT(achv->hdr.ft_len[0] == 5)
 
-    CU_ASSERT(achv->files != NULL);
-    CU_ASSERT(achv->files->f_hdr.f_blk_cnt[0] == 1);
-    CU_ASSERT(achv->files->f_hdr.f_tail_len[0] == 3);
+    CU_ASSERT(achv->files != NULL)
+    CU_ASSERT(achv->files->f_hdr.f_blk_cnt[0] == 1)
+    CU_ASSERT(achv->files->f_hdr.f_tail_len[0] == 3)
 
-    CU_ASSERT(achv->files->f_blks != NULL);
-    CU_ASSERT(achv->files->f_blks->data[0] == 118);
-    CU_ASSERT(achv->files->f_blks->data[1] == 21);
-    CU_ASSERT(achv->files->f_blks->data[2] == 59);
-    CU_ASSERT(achv->files->f_blks->next == NULL);
+    CU_ASSERT(achv->files->f_blks != NULL)
+    CU_ASSERT(achv->files->f_blks->data[0] == 118)
+    CU_ASSERT(achv->files->f_blks->data[1] == 21)
+    CU_ASSERT(achv->files->f_blks->data[2] == 59)
+    CU_ASSERT(achv->files->f_blks->next == NULL)
 
     free(achv->freq_table);
     free(achv->files);

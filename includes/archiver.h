@@ -106,17 +106,3 @@ void *create_archive(char **f_pths, size_t f_cnt, uint8_t flags);
  * data, and writes the extracted files buffers
  */
 void *extract_archive(const struct huff_achv *achv, const char *dst, size_t f_cnt);
-
-/**
- *
- * @param f_achv - file pointer to the existing archive
- * @param fls - array of file pointers to be appended
- * @param f_cnt - number of files to append
- * @return pointer to updated archive or NULL
- *
- * function appends new files to an existing Huffman-compressed archive.
- *
- * the files in 'fls' are compressed and added to the archive file 'f_achv'
- * without modifying previously stored files.
- */
-void *append_to_archive(struct huff_achv *achv, FILE **fls, size_t f_cnt);
