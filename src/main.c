@@ -1,18 +1,17 @@
 #define _GNU_SOURCE
+#include <getopt.h>
+#include <grp.h>
+#include <pwd.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
-#include <sys/time.h>
-#include <getopt.h>
-#include <pwd.h>
-#include <grp.h>
+#include <time.h>
+#include <unistd.h>
 #include "utils.h"
-#include "h_stack.h"
 #include "archiver.h"
+#include "h_stack.h"
 
 #define VER 1.0
 
@@ -135,13 +134,13 @@ int main(int argc, char **argv)
             case 0:
                 if (strcmp(long_options[option_index].name, "no-crc-files-check") == 0) {
                     printf("Skipping file checksum verification\n");
-                    flags |= F_CRC_HEADER_EXISTS;
+                    flags &= ~F_CRC_HEADER_EXISTS;
                 } else if (strcmp(long_options[option_index].name, "no-crc-header-check") == 0) {
                     printf("Skipping archive checksum verification\n");
-                    flags |= F_CRC_FILES_EXISTS;
+                    flags &= ~F_CRC_FILES_EXISTS;
                 } else if (strcmp(long_options[option_index].name, "no-preserve-file-attributes") == 0) {
                     printf("Not preserving file attributes\n");
-                    flags |= F_FILE_ATTRIBUTES_STORED;
+                    flags &= ~F_FILE_ATTRIBUTES_STORED;
                 }
                 break;
 
