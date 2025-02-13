@@ -1,6 +1,6 @@
 include(GNUInstallDirs)
 
-set(CMAKE_C_FLAGS " -std=c99")
+set(CMAKE_C_FLAGS " -std=c99 -fPIC")
 
 IF(NOT DEFINED LIB_VERSION_MAJOR)
     set(LIB_VERSION_MAJOR 0)
@@ -15,11 +15,8 @@ file(GLOB LIB_SRC "*.c")
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/../../includes"
         "${CMAKE_CURRENT_SOURCE_DIR}/../")
-add_library(arc SHARED ${LIB_SRC})
-add_library(arcs STATIC ${LIB_SRC})
 
+add_library(arc STATIC ${LIB_SRC})
 set_target_properties(arc PROPERTIES VERSION ${LIB_VERSION_STRING})
-set_target_properties(arcs PROPERTIES VERSION ${LIB_VERSION_STRING})
-
+target_link_libraries(arc huff util)
 install(TARGETS arc DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
-install(TARGETS arcs DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})

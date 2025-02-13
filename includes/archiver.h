@@ -78,7 +78,6 @@ struct ft_record{
  */
 uint16_t checksum(const void *b, size_t len);
 
-
 /**
  *
  * @param f_pths - array of file paths to be archived

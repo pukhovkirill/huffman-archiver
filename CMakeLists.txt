@@ -8,7 +8,7 @@ IF(NOT DEFINED CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF(NOT DEFINED CMAKE_BUILD_TYPE)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/includes)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/includes")
 
 add_subdirectory(tests)
 add_subdirectory(src)
