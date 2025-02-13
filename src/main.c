@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -18,7 +17,9 @@
 #define VER 1.0
 
 static int files_cnt;
-static uint8_t flags;
+static uint8_t flags = F_CRC_FILES_EXISTS      |
+                       F_CRC_HEADER_EXISTS     |
+                       F_FILE_ATTRIBUTES_STORED;
 
 void write_achv(const char *dst, const struct huff_achv *src);
 size_t read_achv(struct huff_achv **dst, FILE *src);
@@ -89,12 +90,12 @@ void read_file_paths(char ***buf, int argc, char **argv)
         memcpy(path, argv[optind], strlen(argv[optind]));
         push_sck(stack, path);
     }
-
-    *buf = xmalloc("main", stack->size * sizeof(**buf));
+    files_cnt = stack->size;
+    *buf = xmalloc("main", files_cnt * sizeof(**buf));
     while(stack->size > 0){
         char *path;
         pop_sck(stack, (void **)&path);
-        (*buf)[stack->size-1] = path;
+        *buf[stack->size] = path;
     }
 
     free(stack);
@@ -145,6 +146,10 @@ int main(int argc, char **argv)
                 break;
 
             case 'c':
+                if (command != 0) {
+                    fprintf(stderr, "huffer: Conflicting options: -c and another command option\n");
+                    exit(EXIT_FAILURE);
+                }
                 command = 1;
                 read_file_paths(&f_pths, argc, argv);
                 break;
@@ -162,7 +167,7 @@ int main(int argc, char **argv)
                 exit(EXIT_SUCCESS);
 
             case 'o':
-                memset(output, 0, 4096*sizeof(*output));
+                memset(output, 0, 4096);
                 memcpy(output, optarg, strlen(optarg));
                 break;
 
@@ -171,6 +176,10 @@ int main(int argc, char **argv)
                 exit(EXIT_SUCCESS);
 
             case 'x':
+                if (command != 0) {
+                    fprintf(stderr, "huffer: Conflicting options: -x and another command option\n");
+                    exit(EXIT_FAILURE);
+                }
                 command = 2;
                 read_file_paths(&f_pths, argc, argv);
                 break;
@@ -183,7 +192,7 @@ int main(int argc, char **argv)
 
     if(command == 0){
         usage(EXIT_SUCCESS);
-        usage(EXIT_SUCCESS);
+        exit(EXIT_SUCCESS);
     }
 
     if(command == 1){
@@ -206,7 +215,7 @@ int main(int argc, char **argv)
             struct huff_achv *eachv;
             size_t af_cnt = read_achv(&eachv, f);
 
-            f_lst = extract_archive(eachv, "/home/yukir/", af_cnt);
+            f_lst = extract_archive(eachv, output, af_cnt);
 
             for(int j = 0; j < af_cnt; j++){
                 fflush(f_lst[j]);
@@ -218,12 +227,29 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void write_achv(const char *dst, const struct huff_achv *src)
-{
-    FILE *f;
-    int  fd;
+void write_achv(const char *dst, const struct huff_achv *src) {
+    FILE    *f;
+    int     fd;
+    char    achv_path[4096] = {0};
+    size_t  str_size;
 
-    f = fopen(dst, "w");
+    if (!dst) {
+        fprintf(stderr, "write_archive: Invalid file path\n");
+        exit(EXIT_FAILURE);
+    }
+
+    str_size = strlen(dst);
+    if (str_size == 0) {
+        fprintf(stderr, "write_archive: Empty file path\n");
+        exit(EXIT_FAILURE);
+    }
+
+    memcpy(achv_path, dst, str_size);
+    if (achv_path[str_size - 1] == '/') {
+        strcat(achv_path, "achv.hff");
+    }
+
+    f = fopen(achv_path, "w");
     if (f == NULL) {
         perror("write_archive: Failed to create file");
         exit(EXIT_FAILURE);
@@ -232,49 +258,35 @@ void write_achv(const char *dst, const struct huff_achv *src)
     fd = fileno(f);
     fchmod(fd, 0644);
 
-    // write archive header
     fwrite(&src->hdr, sizeof(src->hdr), 1, f);
 
-    uint16_t ft_size;
-    ft_size  = src->hdr.ft_len[1] << 8;
-    ft_size += src->hdr.ft_len[0];
-
-    // write frequency table
+    uint16_t ft_size = (src->hdr.ft_len[1] << 8) + src->hdr.ft_len[0];
     for (int i = 0; i < ft_size; i++) {
         fwrite(&src->freq_table[i], sizeof(*src->freq_table), 1, f);
     }
 
-    // write 'f_cnt' files
     const struct achv_file *files = src->files;
     for (int i = 0; i < files_cnt; i++) {
-        const struct achv_file *file = &files[i];
-
-        // write 'i' file header
-        fwrite(&file->f_hdr, sizeof(files[i].f_hdr), 1, f);
+        fwrite(&files[i].f_hdr, sizeof(files[i].f_hdr), 1, f);
 
         uint32_t blk_cnt;
-        memcpy(&blk_cnt, file->f_hdr.f_blk_cnt, sizeof(blk_cnt));
-
+        memcpy(&blk_cnt, files[i].f_hdr.f_blk_cnt, sizeof(blk_cnt));
         uint16_t tail_len;
-        memcpy(&tail_len, file->f_hdr.f_tail_len, sizeof(tail_len));
+        memcpy(&tail_len, files[i].f_hdr.f_tail_len, sizeof(tail_len));
 
-        const struct f_blk *blk = file->f_blks;
-
-        if (tail_len > 0)
-            blk_cnt -= 1;
-
-        // write 'blk_cnt-1' blocks
+        const struct f_blk *blk = files[i].f_blks;
+        if (tail_len > 0) blk_cnt -= 1;
         for (int j = 0; j < blk_cnt; j++) {
             fwrite(blk->data, 1, BLK_SIZE, f);
             blk = blk->next;
         }
-
-        // write last block
         fwrite(blk->data, 1, tail_len, f);
     }
 
     fputc(EOF, f);
-    fclose(f);
+    if (fclose(f) != 0) {
+        perror("write_archive: Failed to close file");
+    }
 }
 
 static void read_achv_hdr(uint8_t *hdr, FILE *f_achv)
