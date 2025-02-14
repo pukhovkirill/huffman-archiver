@@ -73,7 +73,7 @@ using pure Huffman algorithm.\n\
         fputs("\
 Examples:\n\
   huffer -c foo bar -o archive.hff\
-  # create archivee.hff from files foo and bar\n\
+  # create archive.hff from files foo and bar\n\
   huffer -x archive.hff -o ./\
        # extract all files from archive.hff\n\
   huffer -l archive.hff\
@@ -92,8 +92,8 @@ Keys:\n\
   -x, --extract=<achv1> <achv2> ... Extract files from an archives <achv1>,<achv2>,...\n\
 \n\
 Modifiers:\n\
-  --no-crc-files-check              Do not check files checksum during extraction\n\
-  --no-crc-header-check             Do not check archive checksum during extraction\n\
+  --no-crc-files-check              Do not check files checksum\n\
+  --no-crc-header-check             Do not check archive checksum\n\
   --no-preserve-file-attributes     Do not preserve file attributes\n\
 \n\
 ", stdout);

@@ -187,13 +187,13 @@ void encode_file(struct achv_file  *buf,
     uint32_t      blk_cnt;
     struct f_blk  *f_blks_start;
     struct f_blk  *f_blks;
-    uint16_t      f_next_bit;
+    uint16_t      f_next_byte;
 
     f_blks = xcalloc("encode_file", 1, sizeof(*f_blks));
 
     f_blks_start  = f_blks;
     blk_cnt       = 1;
-    f_next_bit    = 0;
+    f_next_byte   = 0;
 
     int ch;
     uint8_t sum = 0;
@@ -208,18 +208,18 @@ void encode_file(struct achv_file  *buf,
                 sum |= bit;
             if(bit < 128) {
                 bit <<= 1;
-            }else if(f_next_bit < BLK_SIZE) {
-                f_blks->data[f_next_bit++] = sum;
+            }else if(f_next_byte < BLK_SIZE) {
+                f_blks->data[f_next_byte++] = sum;
                 sum = 0;
                 bit = 1;
             }else {
                 f_blks->next = xcalloc("encode_file", 1, sizeof(*f_blks));
 
-                f_next_bit  = 0;
+                f_next_byte  = 0;
                 f_blks      = f_blks->next;
                 blk_cnt     = blk_cnt + 1;
 
-                f_blks->data[f_next_bit++] = sum;
+                f_blks->data[f_next_byte++] = sum;
                 sum = 0;
                 bit = 1;
             }
@@ -227,13 +227,13 @@ void encode_file(struct achv_file  *buf,
     }
 
     if(bit > 1) {
-        f_blks->data[f_next_bit++] = sum;
+        f_blks->data[f_next_byte++] = sum;
     }else {
-        f_next_bit = 0;
+        f_next_byte = 0;
     }
 
     rewind(file);
 
     buf->f_blks = f_blks_start;
-    write_file_header(&buf->f_hdr, fileno(file), f_name, blk_cnt, f_next_bit, flags);
+    write_file_header(&buf->f_hdr, fileno(file), f_name, blk_cnt, f_next_byte, flags);
 }
