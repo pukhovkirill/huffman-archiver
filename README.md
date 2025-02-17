@@ -86,7 +86,7 @@ for(int bit = 1; bit <= 128; bit <<= 1) { <- Перебираем каждый �
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |              Mode (4 b)               |           Owner ID (4 b)              |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              Group ID (4 b)           |      Modification Time (4 b)         |
+|              Group ID (4 b)           |      Modification Time (4 b)          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         +  Modification Time (8 b)                            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -121,9 +121,11 @@ for(int bit = 1; bit <= 128; bit <<= 1) { <- Перебираем каждый �
 ```
 
 Флаги:\
-&nbsp;&nbsp;F_FILE_ATTRIBUTES_STORED&nbsp;&nbsp;32&nbsp;&nbsp;&nbsp;&nbsp;<- сохранить атрибуты файлов\
-&nbsp;&nbsp;F_CRC_FILES_EXISTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;&nbsp;&nbsp;<- посчитать checksum для каждого файла\
-&nbsp;&nbsp;F_CRC_HEADER_EXISTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;128&nbsp;&nbsp;<- посчитать checksum для заголовка архива
+```
+F_FILE_ATTRIBUTES_STORED <- сохранить атрибуты файлов
+F_CRC_FILES_EXISTS       <- посчитать checksum для каждого файла
+F_CRC_HEADER_EXISTS      <- посчитать checksum для заголовка архива
+```
 
 По умолчанию все флаги включены.
 
